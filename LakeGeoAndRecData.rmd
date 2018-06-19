@@ -38,7 +38,6 @@ Need to clean up the data before merging
 ```{r}
 lakesRec$Lake.Name <- toupper(lakesRec$Lake.Name) ##make the lake name all uppercase to match the tp and secchi datasets
 ##look into the other data sets and these data sets to see what is actually going on
-##potentially ask baumann on what he'd do for this conundrum
 
 ```
 
