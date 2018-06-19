@@ -131,3 +131,45 @@ anova(mod2) ##significant
 TukeyHSD(mod2) ## Deep > Big Lakes, Deep > Shallow
 ```
 
+Choosing which lakes to look at first
+===
+
+```{r}
+##probably all of our big lakes (10 lakes)
+##then maybe 10 of each kind of other lake??
+```
+
+
+Merging the wisLagos and lakesRec data sets
+===
+
+```{r}
+merge1 <- wisLagos%>%left_join(lakesRec, by = c("lagosname1" = "Lake.Name"))
+dim(merge1) ## 1669 rows ==> one more than the lakesRec dataset, 156 bass lakes now (6*26)
+
+##Create my distance function
+library(geosphere)
+
+Distance <- function(latLongPairs) {
+  dist <- distCosine(c(latLongPairs[2], latLongPairs[1]), c(latLongPairs[4], latLongPairs[3])) / 1609
+  return(dist)
+}
+
+merge1 <- merge1[!is.na(merge1$Latitude),]
+dim(merge1) ##now only 1597 entries
+latLong <- merge1%>%select(nhd_lat, nhd_long, Latitude, Longitude)
+merge1$Distance <- apply(latLong,1, Distance)
+merge1 <- merge1%>%mutate(DiffAcre = abs((lake_area_ha * 2.47105) - Size..Acres.))
+
+merge1%>%select(lake_area_ha, Size..Acres., lagosname1, Distance, DiffAcre)%>%filter(lagosname1 == "PERCH LAKE")
+
+merge1a <- merge1%>%filter(Distance <= 5 & DiffAcre <= 3000)
+dim(merge1a) ## 489
+
+n_distinct(merge1a$lagoslakeid) ## 489 diff lake id's
+n_distinct(merge1a$lagosname1) ## 410 different lake names
+##write.csv(merge1a, "mergeTest1.csv", row.names = F)
+
+wisComplete <- merge1a ##final complete data set that we want
+```
+
