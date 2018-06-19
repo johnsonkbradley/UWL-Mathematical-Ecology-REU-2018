@@ -1,0 +1,134 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Libraries
+===
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggmap)
+library(car)
+library(GGally)
+library(lubridate)
+library(cluster)
+library(factoextra)
+##pulling from api packages
+library(twitteR)
+library(httr)
+library(jsonlite)
+```
+
+
+Load in the data sets
+===
+
+```{r}
+tp <- read.csv("tp_regions_10yr.csv", header = T)
+secchi <- read.csv("secchi_regions_10yr.csv", header = T)
+geo <- read.csv("geo_hu12 data.csv", header = T)
+lakesRec <- read.csv("LakesRec.csv", header = T)
+```
+
+Need to clean up the data before merging
+===
+
+```{r}
+lakesRec$Lake.Name <- toupper(lakesRec$Lake.Name) ##make the lake name all uppercase to match the tp and secchi datasets
+##look into the other data sets and these data sets to see what is actually going on
+##potentially ask baumann on what he'd do for this conundrum
+
+```
+
+Merge the tp and the secchi data sets into 1
+===
+
+```{r}
+n_distinct(tp$lagoslakeid) ##4054
+n_distinct(secchi$lagoslakeid) ##6271
+n_distinct(tp$lagoslakeid[tp$state_name == "Wisconsin"]) ##945
+n_distinct(secchi$lagoslakeid[secchi$state_name == "Wisconsin"]) ##1227
+##probably want to start with the tp because of less lakes ==> so get only lake id, and the secchi stats to merge with the tp dataset
+secchiFiltered <- secchi%>%select(lagoslakeid, mean_secchi, median_secchi, sd_secchi, covar_secchi, nobs_secchi)
+
+##now actually merge to tp and the secchiFiltered together to make lagos, should be 4054 rows
+lagos <- tp%>%left_join(secchiFiltered, by = "lagoslakeid")
+dim(lagos) ##4054 yes
+
+##subset down to just wisconin lakes, should be 945
+wisLagos <- lagos%>%filter(state_name == "Wisconsin")
+dim(wisLagos) ## 945 yes
+n_distinct(wisLagos$lagoslakeid) ## 945 different lake id's
+n_distinct(wisLagos$lagosname1) ##742 different name ==> i know for sure that there are some lakes in the state that have the same name but are in totally different places
+
+##get rid of lakes with no secchi mean/median measurements or mean depth / max depth
+wisLagos <- wisLagos[!is.na(wisLagos$mean_secchi),]
+wisLagos <- wisLagos[!is.na(wisLagos$meandepth),]
+##Now
+dim(wisLagos) ## 585 entries
+n_distinct(wisLagos$lagoslakeid) ## 585 different lake id's
+n_distinct(wisLagos$lagosname1) ##488 different lake names ## little bit better percent of unique lake names but still going to be interesting when merging with the lakesRec data set where we have just names and only sort of matching lat and long
+```
+
+Cluster on the wisLagos data set
+===
+
+```{r}
+##get the set of variables I want to cluster on
+wisLagosClusterSet <- wisLagos%>%select(lagoslakeid,mean_TP, mean_secchi, lake_area_ha, lake_perim_meters, meandepth, maxdepth, pcturbancombined_hu12, pctagcombined_hu12)
+##scale the data (minus the lakeid column)
+wisLagosScaled <- scale(wisLagosClusterSet[,-1])
+##perform the clustering
+wis.3 <- kmeans(wisLagosScaled, centers = 3, iter.max = 100, nstart = 25)
+wis.4 <- kmeans(wisLagosScaled, centers = 4, iter.max = 100, nstart = 25)
+wis.5 <- kmeans(wisLagosScaled, centers = 5, iter.max = 100, nstart = 25)
+##plot the clustering
+fviz_cluster(wis.3, data = wisLagosScaled, geom = "point", ellipse.type = "norm") 
+fviz_cluster(wis.4, data = wisLagosScaled, geom = "point", ellipse.type = "norm")
+fviz_cluster(wis.5, data = wisLagosScaled, geom = "point", ellipse.type = "norm")
+## i would go with the 3 cluster approach again
+##figure out what the clusters mean
+pairs(wisLagosClusterSet[,-1], panel=function(x,y) text(x,y,wis.3$cluster))
+pairs(wisLagosClusterSet[,-1], col = wis.3$cluster)
+
+wisClust <- data.frame(lagoslakeid = wisLagosClusterSet$lagoslakeid, Cluster = wis.3$cluster)
+wisClust$ClusterType <- ifelse(wisClust$Cluster == 1, "ShallowNotClear",
+                               ifelse(wisClust$Cluster == 2, "BigLakes", "DeepClear"))
+wisClust
+wisLagos <- wisLagos%>%left_join(wisClust, by = "lagoslakeid")
+wisLagos ##should be all good and ready to be merged somehow, and maybe be chosen too idk
+##write.csv(wisLagos, "wisLagos.csv", row.names = F)
+```
+
+### k means scree plot
+
+```{r}
+##k means scree plot
+k.max <- 15
+data <- wisLagosScaled
+wss <- sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
+wss
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+```
+
+Analyzing our clusters
+===
+
+```{r}
+##looking at difference in mean TP
+mod1 <- aov(mean_TP ~ ClusterType, data = wisLagos)
+anova(mod1) ##significant
+TukeyHSD(mod1) ## Big Lakes > Deep, Big Lakes > Shallow, Shallow > Deep
+
+##looking at difference in mean secchi depth
+mod2 <- aov(mean_secchi ~ ClusterType, data = wisLagos)
+anova(mod2) ##significant
+TukeyHSD(mod2) ## Deep > Big Lakes, Deep > Shallow
+```
+
