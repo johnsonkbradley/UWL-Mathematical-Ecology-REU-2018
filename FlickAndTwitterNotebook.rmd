@@ -1,0 +1,67 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Libraries
+===
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggmap)
+library(car)
+library(GGally)
+library(lubridate)
+library(cluster)
+library(factoextra)
+##pulling from api packages
+library(twitteR)
+library(httr)
+library(jsonlite)
+```
+
+Load in the keys
+===
+
+```{r}
+##flickr keys
+keys <- read.table("flickrAPIkeys.txt", sep = ",", header = T) #have key and secret
+##twitter keys
+twitterKeys <- read.table("twitterAPIkeys.txt", sep = ",", header = T)
+```
+
+Flickr functions
+===
+
+```{r}
+## This function will give you all of the flickr photos for a given query, starting from a certain date that the photos were taken
+## Inputs: the search query you want, the earliest day you want to grab that a photo was taken on
+## OUtputs: all flickr posts matching the qeury and the minimum photo taken date that you specified
+GetPhotos <- function(query, startDate) {
+  query <- gsub(" ", "+", query)
+  startDate <- gsub("/", "%2F", startDate)
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=",keys$key,"&text=",query,"&min_taken_date=",startDate,"&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  photos <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  photosDF <- photos$'photos'$photo
+  return(photosDF)
+}
+
+## This function will return the date that a flickr photo was taken, given the id number of the picture
+## Inputs: the id number of the picture you want to know the date taken
+## Outputs: the date taken
+GetDate <- function(id) {
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.getInfo&api_key=",keys$key,"&photo_id=",id,"&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  info <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  date <- info$`photo`$dates$taken
+  return(date)
+}
+```
+
+Setting up the Twitter OAuth
+===
+
+```{r}
+setup_twitter_oauth(twitterKeys$consumer_key, twitterKeys$consumer_secret, twitterKeys$access_token, twitterKeys$access_secret)
+```
+
