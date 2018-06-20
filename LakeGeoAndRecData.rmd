@@ -230,7 +230,7 @@ sample(driftB$lagosname1, 1) ##Lake Onalaska
 sample(driftS$lagosname1, 1) ##Lake EAU GALLE
 sample(driftD$lagosname1, 1) ##no deep lakes in this region
 sample(northB$lagosname1, 1) ## Willow Flowage
-sample(northS$lagosname1, 1) ##Towanda Lake
+sample(northS$lagosname1, 1) ##Towanda Lake / Tabor Lake
 sample(northD$lagosname1, 1) ##Squash Lake
 sample(centralB$lagosname1, 1) ## Shawano Lake
 sample(centralS$lagosname1, 1) ##Hatch Lake
@@ -238,5 +238,12 @@ sample(centralD$lagosname1, 1) ##McGee Lake
 sample(southB$lagosname1, 1) ##Gonna do Lake Mendota
 sample(southS$lagosname1, 1) ##Lake Waubesa
 sample(southD$lagosname1, 1) ##Druid Lake
+
+myLakes <- c("LAKE ONALASKA", "LAKE EAU GALLE", "WILLOW FLOWAGE", "TOWANDA LAKE", "TABOR LAKE", "SQUASH LAKE", "SHAWANO LAKE", "HATCH LAKE", "MCGEE LAKE", "LAKE MENDOTA", "LAKE WAUBESA", "DRUID LAKE")
+
+myLakeDF <- wisComplete%>%filter(lagosname1 %in% myLakes)
+
+wisconsin <- get_map(location = "Wisconsin", zoom = 6)
+ggmap(wisconsin) + geom_point(data = myLakeDF, aes(x = nhd_long, y = nhd_lat, col = ClusterType, shape = EcoRegion), size = 4)
 ```
 
