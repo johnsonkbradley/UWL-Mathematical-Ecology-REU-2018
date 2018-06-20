@@ -45,7 +45,7 @@ Flickr functions
 GetPhotos <- function(query, startDate) {
   query <- gsub(" ", "+", query)
   startDate <- gsub("/", "%2F", startDate)
-  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=",keys$key,"&text=",query,"&min_taken_date=",startDate,"&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=",keys$key,"&text=",query,"&min_taken_date=",startDate,"&sort=date-taken-asc&content_type=1&per_page=5000&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
   photos <- GET(url = url)%>%content(as = "text")%>%fromJSON()
   photosDF <- photos$'photos'$photo
   return(photosDF)
@@ -69,7 +69,7 @@ Setting up the Twitter Token (so we can use the API)
 create_token(app = "REU 2018", consumer_key = twitterKeys$consumer_key, consumer_secret =  twitterKeys$consumer_secret, access_token = twitterKeys$access_token, access_secret = twitterKeys$access_secret)
 ```
 
-How to search using rtweets
+How to search using rtweets (test)
 ===
 
 ```{r}
@@ -77,5 +77,18 @@ mendota1 <- search_tweets(q = "Lake Mendota")
 ts_plot(mendota1) ##we can see the number of tweets per time; ggplot style; 9 day cap for pulls
 mendota1 ##this is saved as a list, so we cant save in a csv file to send
 ```
+
+
+Pull Data From flickr for Lake Mendota (test)
+===
+
+```{r}
+mendotaFlickr5 <- GetPhotos(query = "Lake Mendota", startDate = "1/1/2013")
+dim(mendotaFlickr5) ##gets 500 flickr photos
+mendotaFlickr5$DateTaken <- sapply(mendotaFlickr5$id, GetDate) ##this takes awhile
+mendotaFlickr5 ##got 500 photos from the start date
+
+```
+
 
 
