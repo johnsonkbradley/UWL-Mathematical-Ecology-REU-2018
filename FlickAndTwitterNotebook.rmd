@@ -74,6 +74,8 @@ How to search using rtweets
 
 ```{r}
 mendota1 <- search_tweets(q = "Lake Mendota")
-mendota1$text
+ts_plot(mendota1) ##we can see the number of tweets per time; ggplot style; 9 day cap for pulls
+mendota1 ##this is saved as a list, so we cant save in a csv file to send
 ```
+
 
