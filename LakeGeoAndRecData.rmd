@@ -15,10 +15,8 @@ library(GGally)
 library(lubridate)
 library(cluster)
 library(factoextra)
-##pulling from api packages
-library(twitteR)
-library(httr)
-library(jsonlite)
+library(rgdal)
+library(sf)
 ```
 
 
@@ -171,7 +169,31 @@ n_distinct(wisComplete$lagosname1) ##381 unique lake names
 table(wisComplete$ClusterType, wisComplete$Water.Clarity)
 ```
 
-Choosing which lakes to look into first
+### Choosing which lakes to look into first
+
+Read in out ecoregions csv's and assign the regions
+===
+
+```{r}
+driftless <- read.csv("driftless.csv", header = T)
+dim(driftless)
+north <- read.csv("northernLakesForests.csv", header = T)
+dim(north)
+southEast <- read.csv("seWisTillPlains.csv", header = T)
+dim(southEast)
+
+wisComplete$EcoRegion <- ifelse(wisComplete$lagoslakeid %in% driftless$Lagoslakeid, "Driftless Area",
+                                ifelse(wisComplete$lagoslakeid %in% north$Lagoslakeid, "Northern Lakes and Forests",
+                                       ifelse(wisComplete$lagoslakeid %in% southEast$Lagoslakeid, "Southeastern Wisconsin Till Plains", "North Central Hardwood Forests")))
+
+wisComplete$EcoRegion <- as.factor(wisComplete$EcoRegion)##looks good
+##write.csv(wisComplete, "wisCompleteEco.csv", row.names = F)
+
+
+```
+
+
+Getting ready to sample from each region type combination
 ===
 
 ```{r}
@@ -181,8 +203,40 @@ uniqueLakes <- numberLakes$lagosname1[numberLakes$Count == 1]
 lakes <- wisComplete%>%filter(lagosname1 %in% uniqueLakes)
 dim(lakes) ## 340 lakes where they have unique names
 ## subset down to eco region
-## pick at least 1 lake type from each eco region (randomly besides Lake Mendota and Lake Onalaska)
+driftB <- lakes%>%filter(EcoRegion == "Driftless Area" & ClusterType == "BigLakes")
+driftS <- lakes%>%filter(EcoRegion == "Driftless Area" & ClusterType == "ShallowNotClear")
+driftD <- lakes%>%filter(EcoRegion == "Driftless Area" & ClusterType == "DeepClear")
+
+northB <- lakes%>%filter(EcoRegion == "Northern Lakes and Forests" & ClusterType == "BigLakes")
+northS <- lakes%>%filter(EcoRegion == "Northern Lakes and Forests" & ClusterType == "ShallowNotClear")
+northD <- lakes%>%filter(EcoRegion == "Northern Lakes and Forests" & ClusterType == "DeepClear")
+
+
+centralB <- lakes%>%filter(EcoRegion == "North Central Hardwood Forests" & ClusterType == "BigLakes")
+centralS <- lakes%>%filter(EcoRegion == "North Central Hardwood Forests" & ClusterType == "ShallowNotClear")
+centralD <- lakes%>%filter(EcoRegion == "North Central Hardwood Forests" & ClusterType == "DeepClear")
+
+southB <- lakes%>%filter(EcoRegion == "Southeastern Wisconsin Till Plains" & ClusterType == "BigLakes")
+southS <- lakes%>%filter(EcoRegion == "Southeastern Wisconsin Till Plains" & ClusterType == "ShallowNotClear")
+southD <- lakes%>%filter(EcoRegion == "Southeastern Wisconsin Till Plains" & ClusterType == "DeepClear")
 ```
 
+Sampling the lakes
+===
 
+```{r}
+set.seed(123)
+sample(driftB$lagosname1, 1) ##Lake Onalaska
+sample(driftS$lagosname1, 1) ##Lake EAU GALLE
+sample(driftD$lagosname1, 1) ##no deep lakes in this region
+sample(northB$lagosname1, 1) ## Willow Flowage
+sample(northS$lagosname1, 1) ##Towanda Lake
+sample(northD$lagosname1, 1) ##Squash Lake
+sample(centralB$lagosname1, 1) ## Shawano Lake
+sample(centralS$lagosname1, 1) ##Hatch Lake
+sample(centralD$lagosname1, 1) ##McGee Lake
+sample(southB$lagosname1, 1) ##Gonna do Lake Mendota
+sample(southS$lagosname1, 1) ##Lake Waubesa
+sample(southD$lagosname1, 1) ##Druid Lake
+```
 
