@@ -76,6 +76,10 @@ How to search using rtweets (test)
 mendota1 <- search_tweets(q = "Lake Mendota")
 ts_plot(mendota1) ##we can see the number of tweets per time; ggplot style; 9 day cap for pulls
 mendota1 ##this is saved as a list, so we cant save in a csv file to send
+
+waubesa1 <- search_tweets(q = "Lake Waubesa")
+ts_plot(waubesa1)
+waubesa1
 ```
 
 
@@ -83,11 +87,14 @@ Pull Data From flickr for Lake Mendota (test)
 ===
 
 ```{r}
-mendotaFlickr5 <- GetPhotos(query = "Lake Mendota", startDate = "1/1/2013")
+mendotaFlickr5 <- GetPhotos(query = "Lake Mendota", startDate = "12/6/2013")
 dim(mendotaFlickr5) ##gets 500 flickr photos
 mendotaFlickr5$DateTaken <- sapply(mendotaFlickr5$id, GetDate) ##this takes awhile
 mendotaFlickr5 ##got 500 photos from the start date
+##basically grabbed a years worth of data; last date entered was 12/5/2013
 
+mendotaFlickr1.1.2013_12.5.2013 <- mendotaFlickr5
+mendotaFlickr12.6.2013_8.16.2014 <- mendotaFlickr5
 ```
 
 
