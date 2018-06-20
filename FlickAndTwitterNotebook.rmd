@@ -16,7 +16,7 @@ library(lubridate)
 library(cluster)
 library(factoextra)
 ##pulling from api packages
-library(twitteR)
+library(rtweet)
 library(httr)
 library(jsonlite)
 ```
@@ -29,6 +29,10 @@ Load in the keys
 keys <- read.table("flickrAPIkeys.txt", sep = ",", header = T) #have key and secret
 ##twitter keys
 twitterKeys <- read.table("twitterAPIkeys.txt", sep = ",", header = T)
+twitterKeys$consumer_key <- as.character(twitterKeys$consumer_key)
+twitterKeys$consumer_secret <- as.character(twitterKeys$consumer_secret)
+twitterKeys$access_token <- as.character(twitterKeys$access_token)
+twitterKeys$access_secret <- as.character(twitterKeys$access_secret)
 ```
 
 Flickr functions
@@ -58,10 +62,18 @@ GetDate <- function(id) {
 }
 ```
 
-Setting up the Twitter OAuth
+Setting up the Twitter Token (so we can use the API)
 ===
 
 ```{r}
-setup_twitter_oauth(twitterKeys$consumer_key, twitterKeys$consumer_secret, twitterKeys$access_token, twitterKeys$access_secret)
+create_token(app = "REU 2018", consumer_key = twitterKeys$consumer_key, consumer_secret =  twitterKeys$consumer_secret, access_token = twitterKeys$access_token, access_secret = twitterKeys$access_secret)
+```
+
+How to search using rtweets
+===
+
+```{r}
+mendota1 <- search_tweets(q = "Lake Mendota")
+mendota1$text
 ```
 
