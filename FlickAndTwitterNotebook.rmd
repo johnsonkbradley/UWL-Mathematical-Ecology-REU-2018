@@ -99,14 +99,14 @@ mendotaFlickr5$DateTaken <- sapply(mendotaFlickr5$id, GetDate) ##this takes awhi
 mendotaFlickr5 ##got 500 photos from the start date
 
 
-mendotaFlickr1.1.2013_12.5.2013 
-mendotaFlickr12.6.2013_8.16.2014 
-mendotaFlickr8.17.2014_6.12.2015
-mendotaFlickr6.13.2015_1.5.2016 
-mendotaFlickr1.6.2016_3.14.2016 
-mendotaFlickr3.15.2016_10.23.2016
-mendotaFlickr10.24.2016_5.6.2018  ## can stop here if we only care about 2013-2017
-mendotaFlickr5.7.2018_6.16.2018 ##with this we have all the posts from lake mendota from 1/1/2013 - 6/16/2018
+# mendotaFlickr1.1.2013_12.5.2013 
+# mendotaFlickr12.6.2013_8.16.2014 
+# mendotaFlickr8.17.2014_6.12.2015
+# mendotaFlickr6.13.2015_1.5.2016 
+# mendotaFlickr1.6.2016_3.14.2016 
+# mendotaFlickr3.15.2016_10.23.2016
+# mendotaFlickr10.24.2016_5.6.2018  ## can stop here if we only care about 2013-2017
+# mendotaFlickr5.7.2018_6.16.2018 ##with this we have all the posts from lake mendota from 1/1/2013 - 6/16/2018
 ##putting these all into one big data set
 mendotaFlickr5year <- rbind(mendotaFlickr1.1.2013_12.5.2013, mendotaFlickr12.6.2013_8.16.2014, mendotaFlickr8.17.2014_6.12.2015, mendotaFlickr6.13.2015_1.5.2016, mendotaFlickr1.6.2016_3.14.2016, mendotaFlickr3.15.2016_10.23.2016, mendotaFlickr10.24.2016_5.6.2018, mendotaFlickr5.7.2018_6.16.2018)
 
@@ -145,4 +145,138 @@ ggplot(data = visitorsPerYear, aes(x = Year, y = Count, group = Group)) + geom_l
 ##write.csv(visitorsPerMonth, "lakeMendotaVisPerMonth.csv", row.names = F)
 ```
 
+Lake Onalaska
+===
+
+```{r}
+onalaskaFlickr5 <- GetPhotos(query = "Lake Onalaska", startDate = "1/1/2013")
+dim(onalaskaFlickr5) ##gets 500 flickr photos
+onalaskaFlickr5$DateTaken <- sapply(onalaskaFlickr5$id, GetDate) ##this takes awhile
+onalaskaFlickr5 ##this is it for lake onalaska
+
+onalaskaFlickr5$Year <- substr(onalaskaFlickr5$DateTaken, 1, 4)
+onalaskaFlickr5$Month <- substr(onalaskaFlickr5$DateTaken, 6, 7)
+onalaskaFlickr5$Day <- substr(onalaskaFlickr5$DateTaken, 9, 10)
+
+onalaskaUnique <- onalaskaFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+dim(onalaskaUnique) ## 80 unique days
+
+onalaskaVPM <- onalaskaUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+onalaskaVPM$Group = 1
+onalaskaVPM$EasyDay <- paste(onalaskaVPM$Year, onalaskaVPM$Month, sep = "-")
+
+onalaskaVPY <- onalaskaUnique%>%group_by(Year)%>%summarise(Count = n())
+onalaskaVPY$Group = 1
+
+ggplot(data = onalaskaVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(data = onalaskaVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+```
+
+Lake Waubesa
+===
+
+```{r}
+waubesaFlickr5 <- GetPhotos(query = "Lake Waubesa", startDate = "1/1/2013")
+dim(waubesaFlickr5) ##gets 500 flickr photos
+waubesaFlickr5$DateTaken <- sapply(waubesaFlickr5$id, GetDate) ##this takes awhile
+waubesaFlickr5 ## this is it for lake waubesa
+
+waubesaFlickr5$Year <- substr(waubesaFlickr5$DateTaken, 1, 4)
+waubesaFlickr5$Month <- substr(waubesaFlickr5$DateTaken, 6, 7)
+waubesaFlickr5$Day <- substr(waubesaFlickr5$DateTaken, 9, 10)
+
+waubesaUnique <- waubesaFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+dim(waubesaUnique) ## 41 unique days
+
+waubesaVPM <- waubesaUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+waubesaVPM$Group = 1
+waubesaVPM$EasyDay <- paste(waubesaVPM$Year, waubesaVPM$Month, sep = "-")
+
+waubesaVPY <- waubesaUnique%>%group_by(Year)%>%summarise(Count = n())
+waubesaVPY$Group = 1
+
+ggplot(data = waubesaVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(data = waubesaVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+```
+
+Lake Eau Galle
+===
+
+```{r}
+eaugalleFlickr5 <- GetPhotos(query = "Lake Eau Galle", startDate = "1/1/2013")
+dim(eaugalleFlickr5) ##gets 500 flickr photos
+eaugalleFlickr5$DateTaken <- sapply(eaugalleFlickr5$id, GetDate) ##this takes awhile
+eaugalleFlickr5 ## this is it for lake eau galle
+
+eaugalleFlickr5$Year <- substr(eaugalleFlickr5$DateTaken, 1, 4)
+eaugalleFlickr5$Month <- substr(eaugalleFlickr5$DateTaken, 6, 7)
+eaugalleFlickr5$Day <- substr(eaugalleFlickr5$DateTaken, 9, 10)
+
+eaugalleUnique <- eaugalleFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+dim(eaugalleUnique) ## 15 unique days
+
+eaugalleVPM <- eaugalleUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+eaugalleVPM$Group = 1
+eaugalleVPM$EasyDay <- paste(eaugalleVPM$Year, eaugalleVPM$Month, sep = "-")
+
+eaugalleVPY <- eaugalleUnique%>%group_by(Year)%>%summarise(Count = n())
+eaugalleVPY$Group = 1
+
+ggplot(data = eaugalleVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(data = eaugalleVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+```
+
+Shawano Lake
+===
+
+```{r}
+shawanoFlickr5 <- GetPhotos(query = "Shawano Lake", startDate = "1/1/2013")
+dim(shawanoFlickr5) ##gets 500 flickr photos
+shawanoFlickr5$DateTaken <- sapply(shawanoFlickr5$id, GetDate) ##this takes awhile
+shawanoFlickr5 ## this is it for shawano lake
+
+shawanoFlickr5$Year <- substr(shawanoFlickr5$DateTaken, 1, 4)
+shawanoFlickr5$Month <- substr(shawanoFlickr5$DateTaken, 6, 7)
+shawanoFlickr5$Day <- substr(shawanoFlickr5$DateTaken, 9, 10)
+
+shawanoUnique <- shawanoFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+dim(shawanoUnique) ## 48 unique days
+
+shawanoVPM <- shawanoUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+shawanoVPM$Group = 1
+shawanoVPM$EasyDay <- paste(shawanoVPM$Year, shawanoVPM$Month, sep = "-")
+
+shawanoVPY <- shawanoUnique%>%group_by(Year)%>%summarise(Count = n())
+shawanoVPY$Group = 1
+
+ggplot(data = shawanoVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(data = shawanoVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+```
+
+Druid Lake
+===
+
+```{r}
+druidFlickr5 <- GetPhotos(query = "Druid Lake", startDate = "1/1/2013")
+dim(druidFlickr5) ##gets 500 flickr photos
+druidFlickr5$DateTaken <- sapply(druidFlickr5$id, GetDate) ##this takes awhile
+druidFlickr5 ## this is it for druid lake
+
+druidFlickr5$Year <- substr(druidFlickr5$DateTaken, 1, 4)
+druidFlickr5$Month <- substr(druidFlickr5$DateTaken, 6, 7)
+druidFlickr5$Day <- substr(druidFlickr5$DateTaken, 9, 10)
+
+druidUnique <- druidFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+dim(druidUnique) ## 161 unique days
+
+druidVPM <- druidUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+druidVPM$Group = 1
+druidVPM$EasyDay <- paste(druidVPM$Year, druidVPM$Month, sep = "-")
+
+druidVPY <- druidUnique%>%group_by(Year)%>%summarise(Count = n())
+druidVPY$Group = 1
+
+ggplot(data = druidVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(data = druidVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+```
 
