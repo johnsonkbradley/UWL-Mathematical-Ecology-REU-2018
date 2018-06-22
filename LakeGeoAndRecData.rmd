@@ -245,6 +245,13 @@ myLakeDF <- wisComplete%>%filter(lagosname1 %in% myLakes)
 ##write.csv(myLakeDF, "myLakes.csv", row.names = F)
 
 wisconsin <- get_map(location = "Wisconsin", zoom = 6)
-ggmap(wisconsin) + geom_point(data = myLakeDF, aes(x = nhd_long, y = nhd_lat, col = ClusterType, shape = EcoRegion), size = 5) + scale_shape_manual(values = c(15, 16, 17, 18)) + scale_color_manual(values = c("red", "blue", "green4")) + scale_x_continuous(limits = c(-93, -87)) + scale_y_continuous(limits = c(42, 47)) + theme(legend.position = c(-89, 47))
+
+ggmap(wisconsin) + 
+  geom_point(data = myLakeDF, aes(x = nhd_long, y = nhd_lat, col = ClusterType, shape = EcoRegion), size = 5) + 
+  scale_shape_manual(values = c(15, 16, 17, 18)) + 
+  scale_color_manual(values = c("red", "blue", "green4")) + 
+  scale_x_continuous(limits = c(-93, -87)) + 
+  scale_y_continuous(limits = c(42, 47)) + 
+  theme(legend.position = c(-89, 47))
 ```
 
