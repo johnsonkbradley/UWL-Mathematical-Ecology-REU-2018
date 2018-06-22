@@ -139,8 +139,19 @@ visitorsPerYear <- uniqueDays%>%group_by(Year)%>%summarise(Count = n())
 visitorsPerYear$Group = 1
 visitorsPerYear
 
-ggplot(data = visitorsPerMonth, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("Month") + ylab("Number of Visitors") + ggtitle("Flickr Visitors to Lake Mendota Per Month")
-ggplot(data = visitorsPerYear, aes(x = Year, y = Count, group = Group)) + geom_line() + xlab("Year") + ylab("Number of Visitors") + ggtitle("Flickr Visitors to Lake Mendota Per Year") + scale_y_continuous(breaks=c(0, 50, 100, 150, 200, 250, 300), limits = c(0, 300)) 
+ggplot(data = visitorsPerMonth, aes(x = EasyDay, y = Count, group = Group)) + 
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  xlab("Month") + 
+  ylab("Number of Visitors") + 
+  ggtitle("Flickr Visitors to Lake Mendota Per Month")
+
+ggplot(data = visitorsPerYear, aes(x = Year, y = Count, group = Group)) + 
+  geom_line() + 
+  xlab("Year") + 
+  ylab("Number of Visitors") + 
+  ggtitle("Flickr Visitors to Lake Mendota Per Year") + 
+  scale_y_continuous(breaks=c(0, 50, 100, 150, 200, 250, 300), limits = c(0, 300)) 
 
 ##write.csv(visitorsPerMonth, "lakeMendotaVisPerMonth.csv", row.names = F)
 ```
@@ -168,8 +179,12 @@ onalaskaVPM$EasyDay <- paste(onalaskaVPM$Year, onalaskaVPM$Month, sep = "-")
 onalaskaVPY <- onalaskaUnique%>%group_by(Year)%>%summarise(Count = n())
 onalaskaVPY$Group = 1
 
-ggplot(data = onalaskaVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggplot(data = onalaskaVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+ggplot(data = onalaskaVPM, aes(x = EasyDay, y = Count, group = Group)) + 
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(data = onalaskaVPY, aes(x = Year, y = Count, group = Group)) + 
+  geom_line()
 ```
 
 Lake Waubesa
@@ -195,8 +210,12 @@ waubesaVPM$EasyDay <- paste(waubesaVPM$Year, waubesaVPM$Month, sep = "-")
 waubesaVPY <- waubesaUnique%>%group_by(Year)%>%summarise(Count = n())
 waubesaVPY$Group = 1
 
-ggplot(data = waubesaVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggplot(data = waubesaVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+ggplot(data = waubesaVPM, aes(x = EasyDay, y = Count, group = Group)) + 
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(data = waubesaVPY, aes(x = Year, y = Count, group = Group)) + 
+  geom_line()
 ```
 
 Lake Eau Galle
@@ -222,8 +241,12 @@ eaugalleVPM$EasyDay <- paste(eaugalleVPM$Year, eaugalleVPM$Month, sep = "-")
 eaugalleVPY <- eaugalleUnique%>%group_by(Year)%>%summarise(Count = n())
 eaugalleVPY$Group = 1
 
-ggplot(data = eaugalleVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggplot(data = eaugalleVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+ggplot(data = eaugalleVPM, aes(x = EasyDay, y = Count, group = Group)) + 
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(data = eaugalleVPY, aes(x = Year, y = Count, group = Group)) +
+  geom_line()
 ```
 
 Shawano Lake
@@ -249,8 +272,12 @@ shawanoVPM$EasyDay <- paste(shawanoVPM$Year, shawanoVPM$Month, sep = "-")
 shawanoVPY <- shawanoUnique%>%group_by(Year)%>%summarise(Count = n())
 shawanoVPY$Group = 1
 
-ggplot(data = shawanoVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggplot(data = shawanoVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+ggplot(data = shawanoVPM, aes(x = EasyDay, y = Count, group = Group)) + 
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(data = shawanoVPY, aes(x = Year, y = Count, group = Group)) + 
+  geom_line()
 ```
 
 Druid Lake
@@ -276,7 +303,23 @@ druidVPM$EasyDay <- paste(druidVPM$Year, druidVPM$Month, sep = "-")
 druidVPY <- druidUnique%>%group_by(Year)%>%summarise(Count = n())
 druidVPY$Group = 1
 
-ggplot(data = druidVPM, aes(x = EasyDay, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggplot(data = druidVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
+ggplot(data = druidVPM, aes(x = EasyDay, y = Count, group = Group)) + 
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(data = druidVPY, aes(x = Year, y = Count, group = Group)) + 
+  geom_line()
+```
+
+All together graph
+===
+
+```{r}
+ggplot() + geom_line(data = druidVPY, aes(x = Year, y = Count, group = Group), col = "red") + 
+  geom_line(data = shawanoVPY, aes(x = Year, y = Count, group = Group), col = "blue") + 
+  geom_line(data = eaugalleVPY, aes(x = Year, y = Count, group = Group), col = "green") +
+  geom_line(data = waubesaVPY, aes(x = Year, y = Count, group = Group), col = "purple") +
+  geom_line(data = onalaskaVPY, aes(x = Year, y = Count, group = Group), col = "pink") 
+  ##geom_line(data = visitorsPerYear, aes(x = Year, y = Count, group = Group), col = "black") ##lake mendota (really high compared to the rest)
 ```
 
