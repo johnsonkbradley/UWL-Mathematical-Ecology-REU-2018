@@ -165,10 +165,13 @@ visitorsPerMonth <- uniqueDays%>%group_by(Year, Month)%>%summarise(Count = n())
 visitorsPerMonth$EasyDay <- paste(visitorsPerMonth$Year, visitorsPerMonth$Month, sep = "-")
 visitorsPerMonth$Group = 1
 
+mendotaVPM <- visitorsPerMonth
 
 visitorsPerYear <- uniqueDays%>%group_by(Year)%>%summarise(Count = n())
 visitorsPerYear$Group = 1
 visitorsPerYear
+
+mendotaVPY <- visitorsPerYear
 
 ggplot(data = visitorsPerMonth, aes(x = EasyDay, y = Count, group = Group)) + 
   geom_line() + 
@@ -515,21 +518,36 @@ ggplot(data = willowVPY, aes(x = Year, y = Count, group = Group)) + geom_line()
 ```
 
 
-All together graph
+Get summary stats for all of the lakes per year visitors
 ===
 
 ```{r}
-ggplot() + geom_line(data = druidVPY, aes(x = Year, y = Count, group = Group), col = "red") + 
-  geom_line(data = shawanoVPY, aes(x = Year, y = Count, group = Group), col = "blue") + 
-  geom_line(data = eaugalleVPY, aes(x = Year, y = Count, group = Group), col = "green") +
-  geom_line(data = waubesaVPY, aes(x = Year, y = Count, group = Group), col = "purple") +
-  geom_line(data = onalaskaVPY, aes(x = Year, y = Count, group = Group), col = "pink") +
-  geom_line(data = visitorsPerYear, aes(x = Year, y = Count, group = Group), col = "yellow") +
-  geom_line(data = druidVPY, aes(x = Year, y = Count, group = Group), col = "darkgreen") +
-  geom_line(data = hatchVPY, aes(x = Year, y = Count, group = Group), col = "gold") +
-  geom_line(data = squashVPY, aes(x = Year, y = Count, group = Group), col = "lightblue") +
-  geom_line(data = mcgeeVPY, aes(x = Year, y = Count, group = Group), col = "orange") +
-  geom_line(data = towandaVPY, aes(x = Year, y = Count, group = Group), col = "brown") +
-  geom_line(data = taborVPY, aes(x = Year, y = Count, group = Group), col = "midnightblue") +
-  geom_line(data = willowVPY, aes(x = Year, y = Count, group = Group), col = "black")
+mendotaVPY$Lake <- "LAKE MENDOTA"
+onalaskaVPY$Lake <- "LAKE ONALASKA"
+eaugalleVPY$Lake <- "LAKE EAU GALLE"
+shawanoVPY$Lake <- "SHAWANO LAKE"
+waubesaVPY$Lake <- "LAKE WAUBESA"
+druidVPY$Lake <- "DRUID LAKE"
+hatchVPY$Lake <- "HATCH LAKE"
+willowVPY$Lake <- "WILLOW FLOWAGE"
+squashVPY$Lake <- "SQUASH LAKE"
+mcgeeVPY$Lake <- "MCGEE LAKE"
+towandaVPY$Lake <- "TOWANDA LAKE"
+taborVPY$Lake <- "TABOR LAKE"
+
+ourLakes <- rbind(mendotaVPY, onalaskaVPY, eaugalleVPY, shawanoVPY, waubesaVPY, druidVPY, hatchVPY, willowVPY, squashVPY, mcgeeVPY, towandaVPY, taborVPY)
+
+##only want to use full years of data so that means don't include 2018
+ourLakes <- ourLakes %>% filter(Year != "2018")
+
+##plot the lake data all together
+ggplot(data = ourLakes, aes(x = Year, y = Count, group = Lake, col = Lake)) + geom_line()
+
+ourLakesSummary <- ourLakes %>%
+                    group_by(Lake) %>%
+                    summarise(MeanVPY = mean(Count), MedianVPY = median(Count))
+
+ourLakesSummary ##mean and median values are very similar, so could use either
+plot(ourLakesSummary$MeanVPY, ourLakesSummary$MedianVPY);abline(a=0, b=1)##this plot shows that
 ```
+
