@@ -7,14 +7,6 @@ Libraries
 ===
 
 ```{r}
-library(dplyr)
-library(ggplot2)
-library(ggmap)
-library(car)
-library(GGally)
-library(lubridate)
-library(cluster)
-library(factoextra)
 ##pulling from api packages
 library(rtweet)
 library(httr)
