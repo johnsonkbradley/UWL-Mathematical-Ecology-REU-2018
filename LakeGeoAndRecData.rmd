@@ -256,6 +256,12 @@ ggmap(wisconsin) +
   scale_x_continuous(limits = c(-93, -87)) + 
   scale_y_continuous(limits = c(42, 47)) + 
   theme(legend.position = c(-89, 47))
+
+##mapping the VPY for each lake, had to adjust for lake mendota's huge number
+ggmap(wisconsin) +
+  geom_point(data = myLakeDF[-10,], aes(x = nhd_long, y = nhd_lat, col = VPY)) +
+  geom_point(data = myLakeDF[10,], aes(x = nhd_long, y = nhd_lat), col = "black") +
+  scale_color_continuous(low = "cyan", high = "darkblue")
 ```
 
 
@@ -265,6 +271,8 @@ Merge myLakeDF with the vpyDF to combine the eco data with the social media data
 ```{r}
 myLakeDF <- myLakeDF %>% left_join(vpyDF, by = c("lagosname1" = "LakeName"))
 myLakeDF
+
+myLakeDF$VPYRounded <- ceiling(myLakeDF$VPY)
 ```
 
 Look at relationships
@@ -286,14 +294,12 @@ summary(logmod1)
 linmod1 <- lm(VPY ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF)
 summary(linmod1)
 
-###having troubles with these next to models because we don't have integer values
-
 ##try the poisson model
-poismod1 <- glm(VPY ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF, family = "poisson")
+poismod1 <- glm(VPYRounded ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF, family = "poisson")
 summary(poismod1)
 
-##zip model  
-zipmod1 <- zeroinfl(VPY ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF)
+##zip model  - this one is still weird: look into it more
+zipmod1 <- zeroinfl(VPYRounded ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF)
 summary(zipmod1)
 ```
 
