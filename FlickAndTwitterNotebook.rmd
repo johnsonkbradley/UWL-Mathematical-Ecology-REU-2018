@@ -119,6 +119,25 @@ tabor1 <- search_tweets(q = "Tabor Lake")
 ts_plot(tabor1)
 tabor1
 
+parker1 <- search_tweets(q = "Parker Lake") ## will have to search through to find the relevant ones
+ts_plot(parker1)
+parker1
+
+shell1 <- search_tweets(q = "Shell Lake") ## will have to search through to find the relevant ones
+shell1
+
+koshkonong1 <- search_tweets(q = "Lake Koshkonong")
+koshkonong1
+
+ripley1 <- search_tweets(q = "Lake Ripley") ## will have to search through to find the relevant ones
+ripley1
+
+nagawicka1 <- search_tweets(q = "Nagawicka Lake")
+nagawicka1
+
+birch1 <- search_tweets(q = "Birch Lake")
+birch1
+
 ##saving as an rda file
 save(mendota1, file = "mendota6.20.2018.rda")
 save(waubesa1, file = "waubesa6.26.2018.rda")
@@ -128,6 +147,12 @@ save(hatch1, file = "hatch6.26.2018.rda")
 save(squash1, file = "squash.6.26.2018.rda")
 save(mcgee1, file = "mcgee6.26.2018.rda")
 save(tabor1, file = "tabor6.26.2018.rda")
+save(parker1, file = "parker6.27.2018.rda")
+save(shell1, file = "shell6.27.2018.rda")
+save(koshkonong1, file = "koshkonong6.27.2018.rda")
+save(ripley1, file = "ripley6.27.2018.rda")
+save(nagawicka1, file = "nagawicka6.27.2018.rda")
+save(birch1, file = "birch6.27.2018.rda")
 ```
 
 
