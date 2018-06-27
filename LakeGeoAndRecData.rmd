@@ -17,6 +17,7 @@ library(cluster)
 library(factoextra)
 library(rgdal)
 library(sf)
+library(pscl)
 ```
 
 
@@ -238,12 +239,13 @@ sample(centralD$lagosname1, 1) ##McGee Lake
 sample(southB$lagosname1, 1) ##Gonna do Lake Mendota #
 sample(southS$lagosname1, 1) ##Lake Waubesa #
 sample(southD$lagosname1, 1) ##Druid Lake # 
+```
 
-myLakes <- c("LAKE ONALASKA", "LAKE EAU GALLE", "WILLOW FLOWAGE", "TOWANDA LAKE", "TABOR LAKE", "SQUASH LAKE", "SHAWANO LAKE", "HATCH LAKE", "MCGEE LAKE", "LAKE MENDOTA", "LAKE WAUBESA", "DRUID LAKE")
-
+```{r}
+myLakes <- c("LAKE ONALASKA", "LAKE EAU GALLE", "WILLOW FLOWAGE", "TOWANDA LAKE", "TABOR LAKE", "SQUASH LAKE", "SHAWANO LAKE", "HATCH LAKE", "MCGEE LAKE", "LAKE MENDOTA", "LAKE WAUBESA", "DRUID LAKE", "LUDDEN LAKE", "RICE RIVER FLOWAGE", "HULLS LAKE", "BIG PORTAGE LAKE", "LAKE OWEN", "BIG EAU PLEINE RESEVOIR", "PARKER LAKE", "SHELL LAKE", "LAKE KOSHKONONG", "LAKE RIPLEY", "NAGAWICKA LAKE", "BIRCH LAKE")
 myLakeDF <- wisComplete%>%filter(lagosname1 %in% myLakes)
-myLakeDF
-##write.csv(myLakeDF, "myLakes.csv", row.names = F)
+##write.csv(myLakeDF2, "myLakesTry2.csv", row.names = F)
+
 
 wisconsin <- get_map(location = "Wisconsin", zoom = 6)
 
@@ -256,18 +258,42 @@ ggmap(wisconsin) +
   theme(legend.position = c(-89, 47))
 ```
 
-Attach the visitors per year data to the myLakeDF
+
+Merge myLakeDF with the vpyDF to combine the eco data with the social media data
 ===
 
 ```{r}
-myLakeDF <- myLakeDF %>% left_join(ourLakesSummary, by = c("lagosname1" = "Lake"))
+myLakeDF <- myLakeDF %>% left_join(vpyDF, by = c("lagosname1" = "LakeName"))
 myLakeDF
 ```
 
-Take a look into some relationships between lake attributes now
+Look at relationships
 ===
 
 ```{r}
-ggpairs(myLakeDF[-c(3,5),c(4,12,13,15,16,26,27,30,53)])
+ggpairs(myLakeDF[,c(4,12,13,15,16,26,27,30,53,54)])
+```
+
+First attempt at a model
+===
+
+```{r}
+##try logistic model with HadVisitors
+logmod1 <- glm(HadVisitors ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF, family = "binomial")
+summary(logmod1)
+
+##try a linear model
+linmod1 <- lm(VPY ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF)
+summary(linmod1)
+
+###having troubles with these next to models because we don't have integer values
+
+##try the poisson model
+poismod1 <- glm(VPY ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF, family = "poisson")
+summary(poismod1)
+
+##zip model  
+zipmod1 <- zeroinfl(VPY ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = myLakeDF)
+summary(zipmod1)
 ```
 
