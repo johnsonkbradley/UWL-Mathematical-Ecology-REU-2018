@@ -275,6 +275,15 @@ myLakeDF
 myLakeDF$VPYRounded <- ceiling(myLakeDF$VPY)
 ```
 
+Plots of VPY only 24 lakes
+===
+
+```{r}
+ggplot(data = myLakeDF, aes(x = VPYRounded)) + geom_density(fill = "blue")
+table(myLakeDF$VPYRounded)
+```
+
+
 Look at relationships
 ===
 
@@ -303,3 +312,54 @@ zipmod1 <- zeroinfl(VPYRounded ~ mean_TP + lake_area_ha + meandepth + pcturbanco
 summary(zipmod1)
 ```
 
+Look at the largest lakes to sample from 
+===
+
+```{r}
+wisComplete %>% select(lagosname1, lake_area_ha) %>% arrange(desc(lake_area_ha))
+
+lakes60 <- read.csv("60lakes.csv", header = T)
+
+myLakes3 <- wisComplete[wisComplete$lagosname1 %in% toupper(lakes60$Lake.Name),]
+##write.csv(myLakes3, "myLakes3.csv", row.names = F)
+##this is our 60 lake data set
+ggmap(wisconsin) + 
+  geom_point(data = wisComplete[wisComplete$lagosname1 %in% toupper(lakes60$Lake.Name),], aes(x = nhd_long, y = nhd_lat, col = ClusterType))
+```
+
+Setting up the data set for our 60 lakes
+===
+
+```{r}
+lakesDF <- wisComplete %>% left_join(vpyDF, by = c("lagosname1" = "LakeName"))
+lakesDF <- lakesDF[!is.na(lakesDF$VPY),]
+lakesDF$VPYRounded <- ceiling(lakesDF$VPY)
+```
+
+Look at relationships
+===
+
+```{r}
+ggpairs(lakesDF[,c(4,12,13,15,16,26,27,30,53,54)]) ##with VPY: pcturban, lake_area; with Had Visitors: area, tp, pct ag
+```
+
+First attempt at a model
+===
+
+```{r}
+##try logistic model with HadVisitors
+logmod1a <- glm(HadVisitors ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = lakesDF, family = "binomial")
+summary(logmod1a)
+
+##try a linear model
+linmod1a <- lm(VPY ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = lakesDF)
+summary(linmod1a)
+
+##try the poisson model
+poismod1a <- glm(VPYRounded ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = lakesDF, family = "poisson")
+summary(poismod1a)
+
+##zip model  - this one is still weird: look into it more
+zipmod1a <- zeroinfl(VPYRounded ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = lakesDF)
+summary(zipmod1a)
+```
