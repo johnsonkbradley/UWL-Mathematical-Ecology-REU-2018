@@ -398,11 +398,345 @@ birchFlickr5 <- GetPhotosBBox(query = "Birch Lake", startDate = "1/1/2013", bbox
 dim(birchFlickr5) ## no photos
 ```
 
+
+### Green Lake
+
+```{r}
+greenFlickr5 <- GetPhotosBBox(query = "Green Lake", startDate = "1/1/2013", bbox = "-89,43,-88,44")
+dim(greenFlickr5)
+greenFlickr5$DateTaken <- sapply(greenFlickr5$id, GetDate)
+greenFlickr5
+greenFlickr5$LakeName <- "GREEN LAKE"
+```
+
+### Beaver Dam Lake
+
+```{r}
+beaverdamFlickr5 <- GetPhotosBBox(query = "Beaver Dam Lake", startDate = "1/1/2013", bbox = "-89,43,-88,44")
+dim(beaverdamFlickr5)
+beaverdamFlickr5$DateTaken <- sapply(beaverdamFlickr5$id, GetDate)
+beaverdamFlickr5
+beaverdamFlickr5$LakeName <- "BEAVER DAM LAKE"
+```
+
+### Lac Courte Oreilles
+
+```{r}
+laccourteFlickr5 <- GetPhotosBBox(query = "Lac Courte Oreilles", startDate = "1/1/2013", bbox = "-92,45,-91,46")
+dim(laccourteFlickr5)
+laccourteFlickr5$DateTaken <- sapply(laccourteFlickr5$id, GetDate)
+laccourteFlickr5
+laccourteFlickr5$LakeName <- "LAC COURTE OREILLES"
+```
+
+### Puckaway Lake
+
+```{r}
+puckawayFlickr5 <- GetPhotosBBox(query = "Puckaway Lake", startDate = "1/1/2013", bbox = "-90,43,-89,44")
+dim(puckawayFlickr5)
+puckawayFlickr5$DateTaken <- sapply(puckawayFlickr5$id, GetDate)
+puckawayFlickr5
+puckawayFlickr5$LakeName <- "PUCKAWAY LAKE"
+```
+
+### Trout Lake
+
+```{r}
+troutFlickr5 <- GetPhotosBBox(query = "Trout Lake", startDate = "1/1/2013", bbox = "-90,46,-89,47")
+dim(troutFlickr5)
+troutFlickr5$DateTaken <- sapply(troutFlickr5$id, GetDate)
+troutFlickr5
+troutFlickr5$LakeName <- "TROUT LAKE"
+```
+
+### Tomahawk Lake
+
+```{r}
+tomahawkFlickr5 <- GetPhotosBBox(query = "Tomahawk Lake", startDate = "1/1/2013", bbox = "-90,45,-89,46")
+dim(tomahawkFlickr5)
+tomahawkFlickr5$DateTaken <- sapply(tomahawkFlickr5$id, GetDate)
+tomahawkFlickr5
+tomahawkFlickr5$LakeName <- "TOMAHAWK LAKE"
+```
+
+### Long Lake
+
+```{r}
+longFlickr5 <- GetPhotosBBox(query = "Long Lake", startDate = "1/1/2013", bbox = "-89,45,-90,46")
+dim(longFlickr5) ## no photos
+```
+
+### Lake Monona
+
+```{r}
+mononaFlickr5 <- GetPhotosBBox(query = "Lake Monona", startDate = "1/1/2013", bbox = "-90,43,-89,44")
+dim(mononaFlickr5)
+mononaFlickr5$DateTaken <- sapply(mononaFlickr5$id, GetDate)
+mononaFlickr5
+mononaFlickr5$LakeName <- "LAKE MONONA"
+```
+
+### Namekagon Lake
+
+```{r}
+namekagonFlickr5 <- GetPhotosBBox(query = "Namekagon Lake", startDate = "1/1/2013", bbox = "-92,46,-91,47")
+dim(namekagonFlickr5)
+namekagonFlickr5$DateTaken <- sapply(namekagonFlickr5$id, GetDate)
+namekagonFlickr5
+namekagonFlickr5$LakeName <- "NAMEKAGON LAKE"
+```
+
+### Lake Kegonsa
+
+```{r}
+kegonsaFlickr5 <- GetPhotosBBox(query = "Lake Kegonsa", startDate = "1/1/2013", bbox = "-90,42,-89,43")
+dim(kegonsaFlickr5)
+kegonsaFlickr5$DateTaken <- sapply(kegonsaFlickr5$id, GetDate)
+kegonsaFlickr5
+kegonsaFlickr5$LakeName <- "LAKE KEGONSA"
+```
+
+### Grindstone Lake
+
+```{r}
+grindstoneFlickr5 <- GetPhotosBBox(query = "Grindstone Lake", startDate = "1/1/2013", bbox = "-92,45,-91,46")
+dim(grindstoneFlickr5) ## no photos
+```
+
+### Nelson Lake
+
+```{r}
+nelsonFlickr5 <- GetPhotosBBox(query = "Nelson Lake", startDate = "1/1/2013", bbox = "-92,46,-91,47")
+dim(nelsonFlickr5) ## no photos
+```
+
+### Fox Lake
+
+```{r}
+foxFlickr5 <- GetPhotosBBox(query = "Fox Lake", startDate = "1/1/2013", bbox = "-89,43,-88,44")
+dim(foxFlickr5)
+foxFlickr5$DateTaken <- sapply(foxFlickr5$id, GetDate)
+foxFlickr5
+foxFlickr5$LakeName <- "FOX LAKE"
+```
+
+### Lake Noquebay
+
+```{r}
+noquebayFlickr5 <- GetPhotosBBox(query = "Lake Noquebay", startDate = "1/1/2013", bbox = "-88,45,-87,46")
+dim(noquebayFlickr5) ## no photos
+```
+
+### Pewaukee Lake
+
+```{r}
+pewaukeeFlickr5 <- GetPhotosBBox(query = "Pewaukee Lake", startDate = "1/1/2013", bbox = "-89,43,-88,44")
+dim(pewaukeeFlickr5)
+pewaukeeFlickr5$DateTaken <- sapply(pewaukeeFlickr5$id, GetDate)
+pewaukeeFlickr5
+pewaukeeFlickr5$LakeName <- "PEWAUKEE LAKE"
+```
+
+### Lake Chetac
+
+```{r}
+chetacFlickr5 <- GetPhotosBBox(query = "Lake Chetac", startDate = "1/1/2013", bbox = "-92,45,-91,46")
+dim(chetacFlickr5)
+chetacFlickr5$DateTaken <- sapply(chetacFlickr5$id, GetDate)
+chetacFlickr5
+chetacFlickr5$LakeName <- "LAKE CHETAC"
+```
+
+### Teal Lake
+
+```{r}
+tealFlickr5 <- GetPhotosBBox(query = "Teal Lake", startDate = "1/1/2013", bbox = "-92,46,-91,47")
+dim(tealFlickr5)
+tealFlickr5$DateTaken <- sapply(tealFlickr5$id, GetDate)
+tealFlickr5 ##only in 2018 so no photos that we care about
+
+```
+
+### Yellow Lake
+
+```{r}
+yellowFlickr5 <- GetPhotosBBox(query = "Yellow Lake", startDate = "1/1/2013", bbox = "-93,45,-92,46")
+dim(yellowFlickr5)
+yellowFlickr5$DateTaken <- sapply(yellowFlickr5$id, GetDate)
+yellowFlickr5
+yellowFlickr5$LakeName <- "YELLOW LAKE"
+```
+
+### Red Cedar Lake
+
+```{r}
+redcedarFlickr5 <- GetPhotosBBox(query = "Red Cedar Lake", startDate = "1/1/2013", bbox = "-92,45,-91,46")
+dim(redcedarFlickr5)
+redcedarFlickr5$DateTaken <- sapply(redcedarFlickr5$id, GetDate)
+redcedarFlickr5
+redcedarFlickr5$LakeName <- "RED CEDAR LAKE"
+```
+
+
+### Metonga Lake
+
+```{r}
+metongaFlickr5 <- GetPhotosBBox(query = "Metonga Lake", startDate = "1/1/2013", bbox = "-89,45,-90,46")
+dim(metongaFlickr5) ## no photos
+```
+
+### Lake Mohawksin
+
+```{r}
+mohawksinFlickr5 <- GetPhotosBBox(query = "Lake Mohawksin", startDate = "1/1/2013", bbox = "-90,45,-89,46")
+dim(mohawksinFlickr5)
+mohawksinFlickr5$DateTaken <- sapply(mohawksinFlickr5$id, GetDate)
+mohawksinFlickr5
+mohawksinFlickr5$LakeName <- "LAKE MOHAWKSIN"
+```
+
+### Eagle Lake
+
+```{r}
+eagleFlickr5 <- GetPhotosBBox(query = "Eagle Lake", startDate = "1/1/2013", bbox = "-89,42,-88,43")
+dim(eagleFlickr5)
+eagleFlickr5$DateTaken <- sapply(eagleFlickr5$id, GetDate)
+eagleFlickr5
+eagleFlickr5$LakeName <- "EAGLE LAKE"
+```
+
+### Delevan Lake
+
+```{r}
+delevanFlickr5 <- GetPhotosBBox(query = "Delevan Lake", startDate = "1/1/2013", bbox = "-89,42,-88,43")
+dim(delevanFlickr5)
+delevanFlickr5$DateTaken <- sapply(delevanFlickr5$id, GetDate)
+delevanFlickr5 ## just 2018 so no photos
+```
+
+### Minong Flowage
+
+```{r}
+minongFlickr5 <- GetPhotosBBox(query = "Minong Flowage", startDate = "1/1/2013", bbox = "-92,46,-91,47")
+dim(minongFlickr5)
+minongFlickr5$DateTaken <- sapply(minongFlickr5$id, GetDate)
+minongFlickr5
+minongFlickr5$LakeName <- "MINONG FLOWAGE"
+```
+
+### Bone Lake
+
+```{r}
+boneFlickr5 <- GetPhotosBBox(query = "Bone Lake", startDate = "1/1/2013", bbox = "-93,45,-92,46")
+dim(boneFlickr5)
+boneFlickr5$DateTaken <- sapply(boneFlickr5$id, GetDate)
+boneFlickr5
+boneFlickr5$LakeName <- "BONE LAKE"
+```
+
+### Moose Lake
+
+```{r}
+mooseFlickr5 <- GetPhotosBBox(query = "Moose Lake", startDate = "1/1/2013", bbox = "-92,46,-91,47")
+dim(mooseFlickr5) ## no photos
+```
+
+### High Falls Resevoir
+
+```{r}
+highfallsFlickr5 <- GetPhotosBBox(query = "High Falls Resevoir", startDate = "1/1/2013", bbox = "-89,45,-90,46")
+dim(highfallsFlickr5) ## no photos
+```
+
+### Spider Lake
+
+```{r}
+spiderFlickr5 <- GetPhotosBBox(query = "Spider Lake", startDate = "1/1/2013", bbox = "-92,46,-91,47")
+dim(spiderFlickr5) ## no photos
+```
+
+### Prairie Lake
+
+```{r}
+prairieFlickr5 <- GetPhotosBBox(query = "Prairie Lake", startDate = "1/1/2013", bbox = "-92,45,-91,46")
+dim(prairieFlickr5)
+prairieFlickr5$DateTaken <- sapply(prairieFlickr5$id, GetDate)
+prairieFlickr5
+prairieFlickr5$LakeName <- "PRAIRIE LAKE"
+```
+
+### Tainter Lake
+
+```{r}
+tainterFlickr5 <- GetPhotosBBox(query = "Tainter Lake", startDate = "1/1/2013", bbox = "-92,44,-91,45")
+dim(tainterFlickr5) ## no photos
+```
+
+### Rock Lake
+
+```{r}
+rockFlickr5 <- GetPhotosBBox(query = "Rock Lake", startDate = "1/1/2013", bbox = "-89,43,-88,44")
+dim(rockFlickr5)
+rockFlickr5$DateTaken <- sapply(rockFlickr5$id, GetDate)
+rockFlickr5
+rockFlickr5$LakeName <- "ROCK LAKE"
+```
+
+### Bear Lake
+
+```{r}
+bearFlickr5 <- GetPhotosBBox(query = "Bear Lake", startDate = "1/1/2013", bbox = "-92,45,-91,46")
+dim(bearFlickr5)
+bearFlickr5$DateTaken <- sapply(bearFlickr5$id, GetDate)
+bearFlickr5
+bearFlickr5$LakeName <- "BEAR LAKE"
+```
+
+### Minocqua Lake
+
+```{r}
+minocquaFlickr5 <- GetPhotosBBox(query = "Minocqua Lake", startDate = "1/1/2013", bbox = "-90,45,-89,46")
+dim(minocquaFlickr5)
+minocquaFlickr5$DateTaken <- sapply(minocquaFlickr5$id, GetDate)
+minocquaFlickr5
+minocquaFlickr5$LakeName <- "MINOCQUA LAKE"
+```
+
+### Clam Lake
+
+```{r}
+clamFlickr5 <- GetPhotosBBox(query = "Clam Lake", startDate = "1/1/2013", bbox = "-91,46,-90,47")
+dim(clamFlickr5)
+clamFlickr5$DateTaken <- sapply(clamFlickr5$id, GetDate)
+clamFlickr5
+clamFlickr5$LakeName <- "CLAM LAKE"
+```
+
+### Pickerel Lake
+
+```{r}
+pickerelFlickr5 <- GetPhotosBBox(query = "Pickerel Lake", startDate = "1/1/2013", bbox = "-90,45,-89,46")
+dim(pickerelFlickr5) ## no photos
+```
+
+### Island Lake
+
+```{r}
+islandFlickr5 <- GetPhotosBBox(query = "Island Lake", startDate = "1/1/2013", bbox = "-92,45,-91,46")
+dim(islandFlickr5)
+islandFlickr5$DateTaken <- sapply(islandFlickr5$id, GetDate)
+islandFlickr5
+islandFlickr5$LakeName <- "ISLAND LAKE"
+```
+
+
+*Will need to re-run all of this below once I get the data for all 60 lakes that we are now looking into*
 Combine the lakes into one data set to get the visitors per year (VPY) stats
 ===
 
 ```{r}
-combinedFlickr5 <- rbind(mendotaFlickr5, onalaskaFlickr5, eaugalleFlickr5, shawanoFlickr5, waubesaFlickr5, willowFlickr5, bigportageFlickr5, owenFlickr5, shellFlickr5, koshkonongFlickr5, ripleyFlickr5, nagawickaFlickr5)
+combinedFlickr5 <- rbind(mendotaFlickr5, onalaskaFlickr5, eaugalleFlickr5, shawanoFlickr5, waubesaFlickr5, willowFlickr5, bigportageFlickr5, owenFlickr5, shellFlickr5, koshkonongFlickr5, ripleyFlickr5, nagawickaFlickr5, greenFlickr5, beaverdamFlickr5, laccourteFlickr5, puckawayFlickr5, mononaFlickr5, namekagonFlickr5, kegonsaFlickr5, foxFlickr5, pewaukeeFlickr5, chetacFlickr5, yellowFlickr5, redcedarFlickr5, mohawksinFlickr5, eagleFlickr5, minongFlickr5, boneFlickr5, prairieFlickr5, rockFlickr5, bearFlickr5, minocquaFlickr5, clamFlickr5, islandFlickr5)
+
 combinedFlickr5
 ```
 
@@ -414,7 +748,7 @@ vpyDF <- FlickrVPY(combinedFlickr5)
 vpyDF
 
 ##now add on the 0 VPY for the rest of the lake
-noPhotos <- data.frame(LakeName = c("DRUID LAKE", "HATCH LAKE", "SQUASH LAKE", "MCGEE LAKE", "TOWANDA LAKE", "TABOR LAKE", "LUDDEN LAKE", "RICE RIVER FLOWAGE", "HULLS LAKE", "BIG EAU PLEINE RESEVOIR", "PARKER LAKE", "BIRCH LAKE"), VPY = rep(0,12))
+noPhotos <- data.frame(LakeName = c("DRUID LAKE", "HATCH LAKE", "SQUASH LAKE", "MCGEE LAKE", "TOWANDA LAKE", "TABOR LAKE", "LUDDEN LAKE", "RICE RIVER FLOWAGE", "HULLS LAKE", "BIG EAU PLEINE RESEVOIR", "PARKER LAKE", "BIRCH LAKE", "LONG LAKE", "GRINDSTONE LAKE", "NELSON LAKE", "LAKE NOQUEBAY", "TEAL LAKE", "METONGA LAKE", "DELEVAN LAKE", "MOOSE LAKE", "HIGH FALLS RESEVOIR", "SPIDER LAKE", "TAINTER LAKE", "PICKEREL LAKE"), VPY = rep(0,24))
 noPhotos
 
 ##then combine the two data frames
@@ -422,6 +756,6 @@ vpyDF <- rbind(vpyDF, noPhotos)
 
 ##create a binary visitors or not column
 vpyDF$HadVisitors <- vpyDF$VPY != 0
-vpyDF
+summary(vpyDF)
 ```
 
