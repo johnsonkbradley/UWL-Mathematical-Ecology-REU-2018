@@ -1,0 +1,97 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+Libraries
+===
+
+```{r}
+library(forecast)
+```
+
+
+Look deep into the month to month/day to day data for Lake Mendota and Lake Monona
+===
+
+```{r}
+mendotaFlickr5
+mendotaFlickr5$Year <- substr(mendotaFlickr5$DateTaken, 1, 4)
+mendotaFlickr5$Month <- substr(mendotaFlickr5$DateTaken, 6, 7)
+mendotaFlickr5$Day <- substr(mendotaFlickr5$DateTaken, 9, 10)
+
+mendotaUnique <- mendotaFlickr5%>%group_by(owner, Year, Month, Day, LakeName)%>%summarise(Count = n())
+mendotaUnique
+mendotaMonth <- mendotaUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+mendotaMonth$Date <- paste(mendotaMonth$Year, mendotaMonth$Month, sep = "-")
+mendotaMonth$Group = 1
+mendotaMonth <- mendotaMonth[-1,] ##because a year 1967
+mendotaMonth
+
+###===========
+AprilToSept <- c("04", "05", "06", "07", "08", "09")
+
+ggplot(data = mendotaMonth, aes(x = Date, y = Count, group = Group)) +
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  geom_point(data = mendotaMonth, aes(x = Date, y = Count, col = (Month %in% AprilToSept)), size = 4) +
+  geom_smooth(se = F, method = "lm")
+```
+
+Lake Mendonta psuedo time series
+===
+
+```{r}
+mendota_tslite <- data.frame(Month = c(mendotaMonth$Date, "2014-12", "2015-03", "2015-10", "2015-12", "2017-10"), Count = c(mendotaMonth$Count, 0,0,0,0,0))
+mendota_tslite$Group <- 1
+
+ggplot(data = mendota_tslite, aes(x = Month, y = Count, group = Group)) +
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  geom_smooth(se = F, method = "lm") +
+  geom_smooth(col = "red", se = F)
+```
+
+Lake Mendota Time Series
+===
+
+```{r}
+mendota_tslite <- mendota_tslite%>%arrange(Month)
+mendotaTS <- ts(mendota_tslite$Count, start = c(2013,1), end = c(2018,6), frequency = 12)
+plot(mendotaTS)
+mendotaDECOMP <- decompose(mendotaTS)
+plot(mendotaDECOMP) ## this one shows decent stuff
+plot(forecast(mendotaTS))
+```
+
+Lake Monona ts set up
+===
+
+```{r}
+mononaFlickr5$Year <- substr(mononaFlickr5$DateTaken, 1, 4)
+mononaFlickr5$Month <- substr(mononaFlickr5$DateTaken, 6, 7)
+mononaFlickr5$Day <- substr(mononaFlickr5$DateTaken, 9, 10)
+
+mononaUnique <- mononaFlickr5%>%group_by(owner, Year, Month, Day, LakeName)%>%summarise(Count = n())
+mononaUnique
+mononaMonth <- mononaUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+mononaMonth$Date <- paste(mononaMonth$Year, mononaMonth$Month, sep = "-")
+mononaMonth <- mononaMonth[-1,]
+mononaMonth%>%arrange(Date)
+
+monona_tslite <- data.frame(Month = c(mononaMonth$Date, "2013-12", "2014-01", "2014-02","2011-03","2014-04","2015-01","2015-02","2015-03","2015-12","2016-12","2017-02","2017-04","2017-10","2017-11","2017-12","2018-03"), Count = c(mononaMonth$Count, rep(0,16)))
+```
+
+Lake Monona Time Series
+===
+
+```{r}
+monona_tslite <- monona_tslite%>%arrange(Month)
+mononaTS <- ts(monona_tslite$Count, start = c(2013,1), end = c(2018,6), frequency = 12)
+plot(mononaTS)
+mononaDECOMP <- decompose(mononaTS)
+plot(mononaDECOMP) ## this one shows decent stuff
+plot(forecast(mononaTS))
+```
+
