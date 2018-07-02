@@ -208,6 +208,13 @@ ggplot() +
   geom_point(data = mendotaFull, aes(x = Date, y = MeanTP, shape = Year), col = "blue", size = 5) +
   geom_point(data = mendotaFull, aes(x = Date, y = Count, shape = Year), col = "red", size = 5) +
   geom_point(data = mendotaFull, aes(x = Date, y = MeanTempF, shape = Year), size = 5, col = "black")
+
+##or same idea but faceted
+ggplot(data = mendotaFull) +
+  geom_point(aes(x = Month, y = Count), col = "red", size = 5) +
+  geom_point(aes(x = Month, y = MeanTP), col = "blue", size = 5) +
+  geom_point(aes(x = Month, y = MeanTempF), col = "black", size = 5) +
+  facet_wrap(~Year)
 ```
 
 ### Lake Monona
@@ -225,5 +232,11 @@ ggplot() +
   geom_point(data = mononaFull, aes(x = Date, y = MeanTP, shape = Year), col = "blue", size = 5) +
   geom_point(data = mononaFull, aes(x = Date, y = Count, shape = Year), col = "red", size = 5) +
   geom_point(data = mononaFull, aes(x = Date, y = MeanTempC, shape = Year), size = 5, col = "black")
+
+ggplot(data = mononaFull) +
+  geom_point(aes(x = Month, y = Count), col = "red", size = 5) +
+  geom_point(aes(x = Month, y = MeanTP), col = "blue", size = 5) +
+  geom_point(aes(x = Month, y = MeanTempC), col = "black", size = 5) +
+  facet_wrap(~Year)
 ```
 
