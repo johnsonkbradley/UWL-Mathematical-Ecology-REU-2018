@@ -27,7 +27,7 @@ mendotaMonth <- mendotaUnique%>%group_by(Year, Month)%>%summarise(Count = n())
 mendotaMonth$Date <- paste(mendotaMonth$Year, mendotaMonth$Month, sep = "-")
 mendotaMonth$Group = 1
 mendotaMonth <- mendotaMonth[-1,] ##because a year 1967
-mendotaMonth
+mendotaMonth ## aka visitor data
 
 ###===========
 AprilToSept <- c("04", "05", "06", "07", "08", "09")
@@ -72,9 +72,17 @@ mendotaReport
 mendotaReport$Month <- substr(mendotaReport$Start.Date, 1, 1) 
 mendotaReport$Year <- substr(mendotaReport$Start.Date, nchar(as.character(mendotaReport$Start.Date)) - 3, nchar(as.character(mendotaReport$Start.Date))) 
 
-menMonthRep <- mendotaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T), mean(Total.Phosphorus.ug.l., na.rm = T))
+menMonthRep <- mendotaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T),MeanTP = mean(Total.Phosphorus.ug.l., na.rm = T))
 menMonthRep  ## this has so many NaN's so not very usefull at all, total phosphorus has all entries tho so maybe???
 ##only problem is that we do not have every month from 2013-2017
+
+menMonthRep$Date <- paste(menMonthRep$Year, menMonthRep$Month, sep = "-")
+menMonthRep$Group = 1
+
+menMonthRep$Month <- paste("0", menMonthRep$Month, sep = "")
+menMonthRep ## aka tp measurement
+
+ggplot(data = menMonthRep, aes(x = Date, y = MeanTP, group = Group)) + geom_line()
 ```
 
 
@@ -92,6 +100,8 @@ mononaMonth <- mononaUnique%>%group_by(Year, Month)%>%summarise(Count = n())
 mononaMonth$Date <- paste(mononaMonth$Year, mononaMonth$Month, sep = "-")
 mononaMonth <- mononaMonth[-1,]
 mononaMonth%>%arrange(Date)
+
+mononaMonth ## aka visitor data
 
 monona_tslite <- data.frame(Month = c(mononaMonth$Date, "2013-12", "2014-01", "2014-02","2011-03","2014-04","2015-01","2015-02","2015-03","2015-12","2016-12","2017-02","2017-04","2017-10","2017-11","2017-12","2018-03"), Count = c(mononaMonth$Count, rep(0,16)))
 ```
@@ -116,11 +126,104 @@ mononaReport <- read.csv("mononaReport.csv", header = T)
 mononaReport <- mononaReport[(1:86),]
 mononaReport
 
+mononaReport$Date <- paste(mononaReport$Year, mononaReport$Month, sep = "-")
+plot(mononaReport$Date, mononaReport$Total.Phosphorus.ug.l.)
+ggplot(data = mononaReport, aes(x = Date, y = Total.Phosphorus.ug.l.)) + geom_point()
+
 mononaReport$Month <- substr(mononaReport$Start.Date, 1, 1)
 mononaReport$Year <- substr(mononaReport$Start.Date, nchar(as.character(mononaReport$Start.Date)) - 3, nchar(as.character(mononaReport$Start.Date)))
 
-monMonthRep <- mononaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T), mean(Total.Phosphorus.ug.l., na.rm = T))
+monMonthRep <- mononaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T), MeanTP =  mean(Total.Phosphorus.ug.l., na.rm = T))
 monMonthRep ## only 1 NaN for total phosphorus, the rest aren't very good tho
 ##only problem is that we do not have every month from 2013-2017
+
+monMonthRep$Date <- paste(monMonthRep$Year, monMonthRep$Month, sep = "-")
+monMonthRep$Group = 1
+
+monMonthRep$Month <- paste("0", monMonthRep$Month, sep = "")
+monMonthRep ## aka tp data
+
+ggplot(data = monMonthRep, aes(x = Date, y = MeanTP, group = Group)) + geom_line()
+```
+
+Temperatures 
+===
+
+### monona
+
+```{r}
+mononaTemp <- read.table("https://waterdata.usgs.gov/wi/nwis/dv?cb_00010=on&format=rdb&site_no=05429000&referred_module=sw&period=&begin_date=2013-01-01&end_date=2018-07-01", skip = 31, sep = "\t")
+mononaTemp <- mononaTemp[,c(3,8)]
+colnames(mononaTemp) <- c("Date", "MeanTempC")
+mononaTemp$Year <- substr(mononaTemp$Date, 1, 4)
+mononaTemp$Month <- substr(mononaTemp$Date, 6, 7)
+mononaTemp
+
+mononaTempMonth <- mononaTemp%>%group_by(Year, Month)%>%summarise(MeanTempC = mean(MeanTempC, na.rm = T))
+mononaTempMonth$Date <- paste(mononaTempMonth$Year, mononaTempMonth$Month, sep = "-")
+mononaTempMonth$Group = 1
+
+mononaTempMonth ## temp data
+
+ggplot(data = mononaTempMonth, aes(x = Date, y = MeanTempC, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+### mendota
+
+```{r}
+mendotaTemp <- read.csv("mendotaTemp.csv", header = T)
+mendotaTemp <- mendotaTemp[-17,]%>%select(Start.Date, Temperature)
+
+mendotaTemp$Month <- substr(mendotaTemp$Start.Date, 1, 1) 
+mendotaTemp$Year <- substr(mendotaTemp$Start.Date, nchar(as.character(mendotaTemp$Start.Date)) - 3, nchar(as.character(mendotaTemp$Start.Date))) 
+
+mendotaTemp2 <- mendotaTemp%>%group_by(Year, Month)%>%summarise(MeanTempF = mean(Temperature))
+mendotaTemp2 ## temp data
+mendotaTemp2$Month <- paste("0", mendotaTemp2$Month, sep = "")
+
+
+ggplot(data = mendotaTemp2, aes(x = Month, y = MeanTempF, col = Year)) + geom_point(size = 5, alpha = .75)
+```
+
+Make useful data frames with the data I want in it
+===
+
+```{r}
+dates <- data.frame(Year = rep(c("2013", "2014", "2015", "2016", "2017"), 3), Month = rep(c("06", "07", "08"), 5))
+dates
+```
+
+### Lake Mendota
+
+```{r}
+mendotaFull <- dates%>%left_join(mendotaTemp2, by = c("Year", "Month"))
+mendotaFull <- mendotaFull%>%left_join(menMonthRep, by = c("Year", "Month"))
+mendotaFull <- mendotaFull%>%left_join(mendotaMonth, by = c("Year", "Month"))
+mendotaFull <- mendotaFull%>%select(Year, Month, MeanTempF, MeanTP, Count)
+mendotaFull$Date <- paste(mendotaFull$Year, mendotaFull$Month, sep = "-")
+mendotaFull
+
+##nice informative plot
+ggplot() +
+  geom_point(data = mendotaFull, aes(x = Date, y = MeanTP, shape = Year), col = "blue", size = 5) +
+  geom_point(data = mendotaFull, aes(x = Date, y = Count, shape = Year), col = "red", size = 5) +
+  geom_point(data = mendotaFull, aes(x = Date, y = MeanTempF, shape = Year), size = 5, col = "black")
+```
+
+### Lake Monona
+
+```{r}
+mononaFull <- dates%>%left_join(mononaTempMonth, by = c("Year", "Month"))
+mononaFull <- mononaFull%>%left_join(monMonthRep, by = c("Year", "Month"))
+mononaFull <- mononaFull%>%left_join(mononaMonth, by = c("Year", "Month"))
+mononaFull <- mononaFull%>%select(Year, Month, MeanTP, MeanTempC, Count)
+mononaFull$Date <- paste(mononaFull$Year, mononaFull$Month, sep = "-")
+mononaFull$Count[is.na(mononaFull$Count)] <- 0
+mononaFull
+
+ggplot() +
+  geom_point(data = mononaFull, aes(x = Date, y = MeanTP, shape = Year), col = "blue", size = 5) +
+  geom_point(data = mononaFull, aes(x = Date, y = Count, shape = Year), col = "red", size = 5) +
+  geom_point(data = mononaFull, aes(x = Date, y = MeanTempC, shape = Year), size = 5, col = "black")
 ```
 
