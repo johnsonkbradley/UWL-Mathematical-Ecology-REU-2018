@@ -69,10 +69,12 @@ summary(mendotaReport)
 
 mendotaReport <- mendotaReport[(296:389),]
 mendotaReport
-mendotaReport$Month <- substr(mendotaReport$Start.Date, 1, 1)
-mendotaReport$Year <- substr(mendotaReport$Start.Date, 6, 9)
+mendotaReport$Month <- substr(mendotaReport$Start.Date, 1, 1) 
+mendotaReport$Year <- substr(mendotaReport$Start.Date, nchar(as.character(mendotaReport$Start.Date)) - 3, nchar(as.character(mendotaReport$Start.Date))) 
+
 menMonthRep <- mendotaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T), mean(Total.Phosphorus.ug.l., na.rm = T))
-menMonthRep  ## this has so many NaN's so not very usefull at all, total phosphorus has all but 2 entries tho so maybe???
+menMonthRep  ## this has so many NaN's so not very usefull at all, total phosphorus has all entries tho so maybe???
+##only problem is that we do not have every month from 2013-2017
 ```
 
 
@@ -115,9 +117,10 @@ mononaReport <- mononaReport[(1:86),]
 mononaReport
 
 mononaReport$Month <- substr(mononaReport$Start.Date, 1, 1)
-mononaReport$Year <- substr(mononaReport$Start.Date, 6, 9)
+mononaReport$Year <- substr(mononaReport$Start.Date, nchar(as.character(mononaReport$Start.Date)) - 3, nchar(as.character(mononaReport$Start.Date)))
 
 monMonthRep <- mononaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T), mean(Total.Phosphorus.ug.l., na.rm = T))
 monMonthRep ## only 1 NaN for total phosphorus, the rest aren't very good tho
+##only problem is that we do not have every month from 2013-2017
 ```
 
