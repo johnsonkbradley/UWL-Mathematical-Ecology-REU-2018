@@ -45,12 +45,6 @@ Lake Mendonta psuedo time series
 ```{r}
 mendota_tslite <- data.frame(Month = c(mendotaMonth$Date, "2014-12", "2015-03", "2015-10", "2015-12", "2017-10"), Count = c(mendotaMonth$Count, 0,0,0,0,0))
 mendota_tslite$Group <- 1
-
-ggplot(data = mendota_tslite, aes(x = Month, y = Count, group = Group)) +
-  geom_line() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  geom_smooth(se = F, method = "lm") +
-  geom_smooth(col = "red", se = F)
 ```
 
 Lake Mendota Time Series
@@ -64,6 +58,23 @@ mendotaDECOMP <- decompose(mendotaTS)
 plot(mendotaDECOMP) ## this one shows decent stuff
 plot(forecast(mendotaTS))
 ```
+
+Lake Mendota Data Set
+===
+
+```{r}
+mendotaReport <- read.csv("mendotaReport.csv", header = T)
+mendotaReport
+summary(mendotaReport)
+
+mendotaReport <- mendotaReport[(296:389),]
+mendotaReport
+mendotaReport$Month <- substr(mendotaReport$Start.Date, 1, 1)
+mendotaReport$Year <- substr(mendotaReport$Start.Date, 6, 9)
+menMonthRep <- mendotaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T), mean(Total.Phosphorus.ug.l., na.rm = T))
+menMonthRep  ## this has so many NaN's so not very usefull at all, total phosphorus has all but 2 entries tho so maybe???
+```
+
 
 Lake Monona ts set up
 ===
@@ -93,5 +104,20 @@ plot(mononaTS)
 mononaDECOMP <- decompose(mononaTS)
 plot(mononaDECOMP) ## this one shows decent stuff
 plot(forecast(mononaTS))
+```
+
+Lake Monona Data Set
+===
+
+```{r}
+mononaReport <- read.csv("mononaReport.csv", header = T)
+mononaReport <- mononaReport[(1:86),]
+mononaReport
+
+mononaReport$Month <- substr(mononaReport$Start.Date, 1, 1)
+mononaReport$Year <- substr(mononaReport$Start.Date, 6, 9)
+
+monMonthRep <- mononaReport %>% group_by(Year, Month) %>% summarise(mean(Secchi..Feet., na.rm = T), mean(Chlorophyll.ug.l., na.rm = T), mean(Lake.Level, na.rm = T), mean(Total.Phosphorus.ug.l., na.rm = T))
+monMonthRep ## only 1 NaN for total phosphorus, the rest aren't very good tho
 ```
 
