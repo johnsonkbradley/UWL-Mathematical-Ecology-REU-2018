@@ -47,8 +47,9 @@ craterWeatherMelt
 ##Plot - it would be cool to add average visitors per month to this plot as well
 ggplot(data = craterWeatherMelt) +
   geom_line(aes(x = MonthNum, y = value, group = variable, col = variable), size = 2) +
-  scale_color_manual(values = c("red", "blue", "cyan", "darkgrey", "white", "black"), name = "Measurement", labels = c(expression("Maximum Temperature " ~degree~ "F"), expression("Minimum Temperature " ~degree~ "F"), "Total Precipitation (inches)", "Total Snowfall (inches)", "Snow Depth (inches)", "Number of Flickr Visitors")) + 
-  scale_x_discrete(labels = craterWeather$Month) +
+  theme_bw() +
+  scale_color_manual(values = c("red", "blue", "cyan", "grey44", "gray77", "black"), name = "Measurement", labels = c(expression("Maximum Temperature " ~degree~ "F"), expression("Minimum Temperature " ~degree~ "F"), "Total Precipitation (inches)", "Total Snowfall (inches)", "Snow Depth (inches)", "Number of Flickr Visitors")) +
+  scale_x_discrete(labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) +
   xlab("Month") +
   ylab("Average per Month") +
   ggtitle("Crater Lake Weather and Visitor Patterns")
