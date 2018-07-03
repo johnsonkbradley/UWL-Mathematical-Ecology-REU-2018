@@ -822,9 +822,15 @@ craterMonth <- craterUnique%>%group_by(Year, Month)%>%summarise(Count = n())
 craterMonth$Date <- paste(craterMonth$Year, craterMonth$Month, sep = "-")
 craterMonth$Group = 1
 
-ggplot(data = craterMonth, aes(x = Date, y = Count, group = Group)) +
-  geom_line() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(data = craterMonth, aes(x = Date, y = Count, group = Group, col = Year)) +
+  geom_line(size = 2) +
+  theme_bw() +
+  scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_color_manual(values = c("red", "orange", "gold", "green", "blue", "purple")) +
+  xlab("Month") +
+  ylab("Number of Flickr Visitors") +
+  ggtitle("Crater Lake Flickr Visitors Per Month")
 
 ##yearly data
 craterYear <- craterUnique%>%group_by(Year)%>%summarise(Count = n())
