@@ -1,0 +1,73 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Crater Lake Data Sets
+===
+
+```{r}
+craterFlickr5
+craterUnique
+craterMonth
+craterYear
+
+##monthly visitor plot
+ggplot(data = craterMonth, aes(x = Date, y = Count, group = Group)) +
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+##yearly visitor plot
+ggplot(data = craterYear[craterYear$Year != 2018,], aes(x = Year, y = Count, group = Group)) + geom_line()
+```
+
+Monthly Weather Data
+===
+
+```{r}
+craterMonth2 <- craterMonth%>%group_by(Month)%>%summarise(AverageVisitorsPerMonth = mean(Count, na.rm = T))
+craterMonth2$Month <- c(1,2,3,4,5,6,7,8,9,10,11,12)
+craterMonth2$Month <- as.factor(craterMonth2$Month)
+craterMonth2
+```
+
+
+```{r}
+craterWeather <- read.csv("craterLakeMonthlyWeather.csv", header = T)
+craterWeather <- craterWeather[-13,]
+craterWeather$MonthNum <- c(1,2,3,4,5,6,7,8,9,10,11,12)
+craterWeather$MonthNum <- as.factor(craterWeather$MonthNum)
+
+craterWeather <- craterWeather%>%left_join(craterMonth2, by = c("MonthNum" = "Month"))
+craterWeather
+
+craterWeatherMelt <- melt(craterWeather)
+craterWeatherMelt
+
+##Plot - it would be cool to add average visitors per month to this plot as well
+ggplot(data = craterWeatherMelt) +
+  geom_line(aes(x = MonthNum, y = value, group = variable, col = variable), size = 2) +
+  scale_color_manual(values = c("red", "blue", "cyan", "darkgrey", "white", "black"), name = "Measurement", labels = c(expression("Maximum Temperature " ~degree~ "F"), expression("Minimum Temperature " ~degree~ "F"), "Total Precipitation (inches)", "Total Snowfall (inches)", "Snow Depth (inches)", "Number of Flickr Visitors")) + 
+  scale_x_discrete(labels = craterWeather$Month) +
+  xlab("Month") +
+  ylab("Average per Month") +
+  ggtitle("Crater Lake Weather and Visitor Patterns")
+```
+
+Yearly Visitor Data
+===
+
+```{r}
+craterActVisit <- read.csv("craterLakeActualVisitors.csv", header = T)
+craterActVisit$Year <- as.character(craterActVisit$Year)
+
+
+craterActVisit <- craterActVisit%>%left_join(craterYear, by = "Year")
+craterActVisit$VisitorsNum <- c(523027,535508,614712,756344,711749)
+
+##plot - the two trends are actually moving away from each other
+ggplot(data = craterActVisit) +
+  geom_point(aes(x = Year, y = log(Count)), size = 5) +
+  geom_point(aes(x = Year, y = log(VisitorsNum)), size = 5, col = "blue")
+```
+
