@@ -9,6 +9,7 @@ Libraries
 
 ```{r}
 library(forecast)
+library(reshape2)
 ```
 
 
@@ -215,6 +216,21 @@ ggplot(data = mendotaFull) +
   geom_point(aes(x = Month, y = MeanTP), col = "blue", size = 5) +
   geom_point(aes(x = Month, y = MeanTempF), col = "black", size = 5) +
   facet_wrap(~Year)
+
+##melt to make a better looking graph
+mendotaMelt <- melt(mendotaFull)
+mendotaMelt
+
+##good for the presentation
+ggplot(data = mendotaMelt) +
+  geom_point(aes(x = Month, y = value, col = variable), size = 5) + 
+  facet_wrap(~Year) +
+  theme_bw() +
+  theme(legend.position = c(1, .1), legend.justification = c(1, 0)) +
+  scale_x_discrete(labels = c("06" = "Jun", "07" = "Jul", "08" = "Aug")) +
+  scale_color_manual(values = c("blue", "black", "red"), name = "Variable", labels = c(expression("Mean Water Temp " ~degree~ "F"), "Mean Total Phosphorus", "Number of Flickr Visitors")) +
+  ylab("Value") +
+  ggtitle("Lake Mendota")
 ```
 
 ### Lake Monona
@@ -228,6 +244,8 @@ mononaFull$Date <- paste(mononaFull$Year, mononaFull$Month, sep = "-")
 mononaFull$Count[is.na(mononaFull$Count)] <- 0
 mononaFull
 
+mononaFull <- mononaFull%>%left_join(monChlorMonth, by = c("Year", "Month"))
+
 ggplot() +
   geom_point(data = mononaFull, aes(x = Date, y = MeanTP, shape = Year), col = "blue", size = 5) +
   geom_point(data = mononaFull, aes(x = Date, y = Count, shape = Year), col = "red", size = 5) +
@@ -237,6 +255,42 @@ ggplot(data = mononaFull) +
   geom_point(aes(x = Month, y = Count), col = "red", size = 5) +
   geom_point(aes(x = Month, y = MeanTP), col = "blue", size = 5) +
   geom_point(aes(x = Month, y = MeanTempC), col = "black", size = 5) +
+  geom_point(aes(x = Month, y = MeanChlor), col = "green", size = 5) +
   facet_wrap(~Year)
+```
+
+Chlorophyll - not enought data to include
+===
+
+### Lake Monona
+
+```{r}
+chlor <- read.csv("chlor.csv", header = T)
+dim(chlor)
+monChlor <- chlor%>%filter(OFFICIAL_NAME == "Lake Monona")
+dim(monChlor)
+monChlor <- monChlor%>%select(SAMPLE_START_DATE, RESULT_AMT)
+monChlor <- monChlor%>%filter(substr(SAMPLE_START_DATE, 1, 1) %in% c(6,7,8))
+monChlor <- monChlor%>%arrange(SAMPLE_START_DATE)
+monChlor$Month <- paste("0", substr(monChlor$SAMPLE_START_DATE, 1, 1), sep = "")
+monChlor$Year <- substr(monChlor$SAMPLE_START_DATE, nchar(as.character(monChlor$SAMPLE_START_DATE)) - 3, nchar(as.character(monChlor$SAMPLE_START_DATE)))
+monChlor
+monChlorMonth <- monChlor%>%group_by(Year, Month)%>%summarise(MeanChlor = mean(RESULT_AMT, na.rm = T))
+monChlorMonth
+```
+
+### Lake Mendota
+
+```{r}
+menChlor <- chlor%>%filter(OFFICIAL_NAME == "Lake Mendota")
+dim(menChlor)
+menChlor <- menChlor%>%select(SAMPLE_START_DATE, RESULT_AMT)
+menChlor <- menChlor%>%filter(substr(SAMPLE_START_DATE, 1, 1) %in% c(6,7,8))
+menChlor <- menChlor%>%arrange(SAMPLE_START_DATE)
+menChlor$menth <- paste("0", substr(menChlor$SAMPLE_START_DATE, 1, 1), sep = "")
+menChlor$Year <- substr(menChlor$SAMPLE_START_DATE, nchar(as.character(menChlor$SAMPLE_START_DATE)) - 3, nchar(as.character(menChlor$SAMPLE_START_DATE)))
+menChlor
+menChlormenth <- menChlor%>%group_by(Year, menth)%>%summarise(MeanChlor = mean(RESULT_AMT, na.rm = T))
+menChlormenth
 ```
 
