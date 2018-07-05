@@ -830,7 +830,8 @@ ggplot(data = craterMonth, aes(x = Date, y = Count, group = Group, col = Year)) 
   scale_color_manual(values = c("red", "orange", "gold", "green", "blue", "purple")) +
   xlab("Month") +
   ylab("Number of Flickr Visitors") +
-  ggtitle("Crater Lake Flickr Visitors Per Month")
+  ggtitle("Crater Lake Flickr Visitors Per Month") + 
+  geom_smooth(se = F, method = "lm", col = "black")
 
 ##yearly data
 craterYear <- craterUnique%>%group_by(Year)%>%summarise(Count = n())
