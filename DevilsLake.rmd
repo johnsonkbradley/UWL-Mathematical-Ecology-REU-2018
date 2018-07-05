@@ -1,0 +1,128 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Get the Flickr data for Devil's Lake
+===
+
+```{r}
+devilsFlickr5 <- GetPhotosBBox(query = "", startDate = "4/22/2018", bbox = "-89.772087,43.384152,-89.682693,43.43512")
+dim(devilsFlickr5)
+devilsFlickr5$DateTaken <- sapply(devilsFlickr5$id, GetDate)
+devilsFlickr5
+
+# devils1.1.13_9.5.14 <- devilsFlickr5
+# devils9.6.14_10.25.15 <- devilsFlickr5
+# devils10.26.15_9.4.16 <- devilsFlickr5
+# devils9.5.16_4.21.18 <- devilsFlickr5
+# devils4.22.18_6.23.18 <- devilsFlickr5
+
+devilsFlickr5 <- rbind(devils1.1.13_9.5.14, devils9.6.14_10.25.15, devils10.26.15_9.4.16, devils9.5.16_4.21.18, devils4.22.18_6.23.18)
+```
+
+Get the Unique, Month, and Year stats for Devil's Lake
+===
+
+```{r}
+devilsFlickr5$Year <- substr(devilsFlickr5$DateTaken, 1, 4)
+devilsFlickr5$Month <- substr(devilsFlickr5$DateTaken, 6, 7)
+devilsFlickr5$Day <- substr(devilsFlickr5$DateTaken, 9, 10)
+
+devilsUnique <- devilsFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+dim(devilsUnique)## 213 unique photo visitors
+
+devilsMonth <- devilsUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+devilsMonth$Date <- paste(devilsMonth$Year, devilsMonth$Month, sep = "-")
+devilsMonth$Group = 1
+devilsMonth
+
+##Plot
+ggplot(data = devilsMonth, aes(x = Date, y = Count, group = Group)) + geom_line() + theme(axis.text.x = element_text(angle = 90))
+```
+
+Reconfigure the devilsMonth data set to make the rows with months that had 0 flickr posts
+===
+
+```{r}
+DATES <- data.frame(Month = c(rep(c("01", "02", "03", "04", "05", "06","07", "08", "09", "10", "11", "12"), 5), "01", "02", "03", "04", "05", "06"), Year = c(rep("2013", 12), rep("2014", 12), rep("2015", 12), rep("2016", 12), rep("2017", 12), rep("2018", 6)))
+DATES$Date <- paste(DATES$Year, DATES$Month, sep = "-")
+DATES
+
+devilsMonth2 <- DATES%>%left_join(devilsMonth[,-c(1,2)], by = "Date")
+devilsMonth2$Count[is.na(devilsMonth2$Count)] <- 0
+devilsMonth2$Group <- 1
+devilsMonth2
+
+##Plot
+ggplot(data = devilsMonth2, aes(x = Date, y = Count, group = Group, col = Year)) +
+  geom_line(size = 2) +
+  theme_bw() +
+  scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_color_manual(values = c("red", "orange", "gold", "green", "blue", "purple")) +
+  xlab("Month") +
+  ylab("Number of Flickr Visitors") +
+  ggtitle("Devil's Lake Lake Flickr Visitors Per Month") + 
+  geom_smooth(se = F, method = "lm", col = "black")
+```
+
+Devil's Lake Gage Height and Precipitation
+===
+
+### Gage Height
+
+```{r}
+devilsGage <- read.table("https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00065=on&format=rdb&site_no=05404500&period=&begin_date=2013-01-01&end_date=2018-07-05", skip = 31, sep = "\t")
+dim(devilsGage)
+colnames(devilsGage) <- c("Agency", "Code", "Time", "TimeZone", "GageHeight", "A")
+devilsGage$Time <- as.character(devilsGage$Time)
+devilsGage$Year <- substr(devilsGage$Time, 1, 4)
+devilsGage$Month <- substr(devilsGage$Time, 6, 7)
+devilsGage$Day <- substr(devilsGage$Time, 9, 10)
+
+devilsGage <- devilsGage%>%group_by(Year, Month, Day)%>%summarise(AvgGageHeight = mean(GageHeight))
+devilsGage
+```
+
+### Precipitation
+
+```{r}
+devilsPrecip <- read.table("https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00045=on&format=rdb&site_no=05404500&period=&begin_date=2013-01-01&end_date=2018-07-05", skip = 31, sep = "\t")
+dim(devilsPrecip)
+colnames(devilsPrecip) <- c("Agency", "Code", "Time", "TimeZone", "Precipitation", "A")
+devilsPrecip$Time <- as.character(devilsPrecip$Time)
+devilsPrecip$Year <- substr(devilsPrecip$Time, 1, 4)
+devilsPrecip$Month <- substr(devilsPrecip$Time, 6, 7)
+devilsPrecip$Day <- substr(devilsPrecip$Time, 9, 10)
+
+devilsPrecip <- devilsPrecip%>%group_by(Year, Month, Day)%>%summarise(TotalPrecip = sum(Precipitation))
+devilsPrecip
+```
+
+Combining the gage height and precipitation
+===
+
+```{r}
+devilsData <- devilsGage%>%left_join(devilsPrecip, by = c("Year", "Month", "Day"))
+devilsData
+
+devilsDataMonthly <- devilsData%>%group_by(Year, Month)%>%summarise(AvgGageHeight = mean(AvgGageHeight), TotalPrecip = sum(TotalPrecip))
+devilsDataMonthly$Date <- paste(devilsDataMonthly$Year, devilsDataMonthly$Month, sep = "-")
+devilsDataMonthly$Group = 1
+devilsDataMonthly
+
+## Plot
+ggplot() +
+  geom_line(data = devilsMonth2, aes(x = Date, y = Count, group = Group), col = "black" ,size = 2) +
+  geom_line(data = devilsDataMonthly[-67,], aes(x = Date, y = AvgGageHeight, group = Group), col = "red", size = 2) +
+  geom_line(data = devilsDataMonthly[-67,], aes(x = Date, y = TotalPrecip, group = Group), col = "blue", size = 2) +
+  geom_vline(aes(xintercept = which(devilsDataMonthly$Date %in% c("2018-06", "2017-06", "2016-06", "2014-06"))), col = "green", lty = 2, size = 2) +
+  theme_bw() +
+  scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  xlab("Month") +
+  ylab("Measure") +
+  ggtitle("Devil's Lake Stats")
+```
+
