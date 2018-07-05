@@ -33,11 +33,16 @@ mendotaMonth ## aka visitor data
 ###===========
 AprilToSept <- c("04", "05", "06", "07", "08", "09")
 
-ggplot(data = mendotaMonth, aes(x = Date, y = Count, group = Group)) +
-  geom_line() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  geom_point(data = mendotaMonth, aes(x = Date, y = Count, col = (Month %in% AprilToSept)), size = 4) +
-  geom_smooth(se = F, method = "lm")
+ggplot(data = mendotaMonth, aes(x = Date, y = Count, group = Group, col = Year)) +
+  geom_line(size = 2) +
+  theme_bw() +
+  scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_color_manual(values = c("red", "orange", "gold", "green", "blue", "purple")) +
+  xlab("Month") +
+  ylab("Number of Flickr Visitors") +
+  ggtitle("Lake Mendota Flickr Visitors Per Month") +
+  geom_smooth(se = F, method = "lm", col = "black")
 ```
 
 Lake Mendonta psuedo time series
