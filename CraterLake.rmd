@@ -72,3 +72,67 @@ ggplot(data = craterActVisit) +
   geom_point(aes(x = Year, y = log(VisitorsNum)), size = 5, col = "blue")
 ```
 
+Crater Lake Actually Monthly Visitor Data *need to look at this stuff with our monthly data from Flickr*
+===
+
+```{r}
+craterMonthlyVisitors <- read.csv("craterMonthlyVisitors.csv", header = T)
+craterMonthlyVisitors
+table(craterMonthlyVisitors$Month, craterMonthlyVisitors$NonRecVisit) ##all non rec visits are the same for each month (ie on all aprils have the same non rec, all decembers, etc)
+
+craterMonth
+craterMonthlyVisitors
+
+craterMonthlyVisitors$MonthNum <- c(rep(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"), 5), c("01", "02", "03", "04", "05"))
+craterMonthlyVisitors$Year <- as.character(craterMonthlyVisitors$Year)
+craterMonthlyVisitors <- craterMonthlyVisitors%>%left_join(craterMonth, by = c("Year", "MonthNum" = "Month"))
+craterMonthlyVisitors
+
+##try looking at the relationship with monthly visitors from Flickr (Count) and from park totals
+ggpairs(craterMonthlyVisitors[,-c(1,2,9,11,12)]) ##yay this looks very promising
+
+##Plot of flickr count and visitor hours
+ggplot(data = craterMonthlyVisitors) +
+  geom_line(aes(x = Date, y = Count, group = Group), col = "black", size = 2)
+
+ggplot(data = craterMonthlyVisitors) +
+  geom_line(aes(x = Date, y = RecVisitHours, group = Group), col = "blue", size = 2)
+
+ggplot(data = craterMonthlyVisitors, aes(y = RecVisit, x = Count)) +
+  theme_bw() +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = F, col = "red") +
+  xlab("Number of Flickr Visitors per Month") +
+  ylab("Number of Recreational Visitors per Month") +
+  ggtitle("Crater Lake Visitors per Month")
+
+mod1 <- lm(Count ~ RecVisit, data = craterMonthlyVisitors)
+summary(mod1) ## there is a significant relationship between Flickr Visitors and Number Rec Visits
+plot(mod1)
+
+mod1inv <- lm(RecVisit ~ Count, data = craterMonthlyVisitors)
+summary(mod1inv) ## 4141 rec visitors per 1 flickr visitor
+```
+
+Crater Lake Time Series
+===
+
+```{r}
+## rec visitors
+craterTS <- ts(craterMonthlyVisitors$RecVisit, start = c(2013,1), end = c(2018,5), frequency = 12)
+plot(craterTS)
+plot(decompose(craterTS))
+plot(forecast(craterTS)) ## actually a decent forecast
+craterRec4cast <- forecast(craterTS)
+craterRec4cast
+
+## flickr visitors
+craterTS2 <- ts(craterMonthlyVisitors$Count, start = c(2013,1), end = c(2018,5), frequency = 12)
+plot(craterTS2)
+plot(decompose(craterTS2))
+plot(forecast(craterTS2)) ## same for this forecast
+craterFlickr4cast <- forecast(craterTS2)
+craterFlickr4cast ## with this we could then take the point forecast and others back up (* 4141) and then get rec visit future numbers and then can see if they match the rec visitors forecast
+```
+
+
