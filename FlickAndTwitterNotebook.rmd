@@ -145,6 +145,7 @@ save(koshkonong1, file = "koshkonong6.27.2018.rda")
 save(ripley1, file = "ripley6.27.2018.rda")
 save(nagawicka1, file = "nagawicka6.27.2018.rda")
 save(birch1, file = "birch6.27.2018.rda")
+save(mendota1, file = "mendota7.6.2018.rda")
 ```
 
 
@@ -777,31 +778,33 @@ Crater Lake - Looks very promising
 ===
 
 ```{r}
-craterFlickr5 <- GetPhotosBBox(query = "Crater Lake", startDate = "2/5/2018", bbox = "-123,42,-122,43")
+craterFlickr5 <- GetPhotosBBox(query = "Crater Lake", startDate = "1/1/2013", bbox = "-123,42,-122,43")
 dim(craterFlickr5)
 craterFlickr5$DateTaken <- sapply(craterFlickr5$id, GetDate)
 craterFlickr5
 
 
-crater1.1.13_5.30.13 <- craterFlickr5
-crater5.31.13_7.17.13 <- craterFlickr5
-crater7.17.13_1.22.14 <- craterFlickr5
-crater1.23.14_5.20.14 <- craterFlickr5
-crater5.22.14_7.5.14 <- craterFlickr5
-crater7.6.14_8.18.14 <- craterFlickr5
-crater8.19.14_10.4.14 <- craterFlickr5
-crater10.5.14_6.15.15 <- craterFlickr5
-crater6.16.15_7.16.15 <- craterFlickr5
-crater7.17.15_9.8.15 <- craterFlickr5
-crater9.9.15_2.7.16 <- craterFlickr5
-crater2.8.16_6.29.16 <- craterFlickr5
-crater6.30.16_7.31.16 <- craterFlickr5
-crater8.1.14_1.15.17 <- craterFlickr5
-crater1.16.17_7.24.17 <- craterFlickr5
-crater7.25.17_2.4.18 <- craterFlickr5
-crater2.5.18_6.2.18 <- craterFlickr5
+#crater1.1.13_5.30.13 <- craterFlickr5
+#crater5.31.13_7.17.13 <- craterFlickr5
+##crater7.18.13_1.25.14 <- craterFlickr5
+#crater1.26.14_5.20.14 <- craterFlickr5
+#crater5.21.14_7.5.14 <- craterFlickr5
+#crater7.6.14_8.18.14 <- craterFlickr5
+#crater8.19.14_10.3.14 <- craterFlickr5
+#crater10.4.14_6.12.15 <- craterFlickr5
+#crater6.13.15_7.15.15 <- craterFlickr5
 
-craterFlickr5 <- rbind(crater1.1.13_5.30.13, crater5.31.13_7.17.13, crater7.17.13_1.22.14, crater1.23.14_5.20.14, crater5.22.14_7.5.14, crater7.6.14_8.18.14, crater8.19.14_10.4.14, crater10.5.14_6.15.15, crater6.16.15_7.16.15, crater7.17.15_9.8.15, crater9.9.15_2.7.16, crater2.8.16_6.29.16, crater6.30.16_7.31.16, crater8.1.14_1.15.17, crater1.16.17_7.24.17, crater7.25.17_2.4.18, crater2.5.18_6.2.18)
+#crater7.16.15_8.9.15 <- craterFlickr5
+#crater8.10.15_10.16.15 <- craterFlickr5
+#crater10.17.15_6.13.16 <- craterFlickr5
+#crater6.14.16_6.29.16 <- craterFlickr5
+#crater6.30.16_7.31.16 <- craterFlickr5
+#crater8.1.16_1.16.17 <- craterFlickr5
+#crater1.17.17_6.13.17 <- craterFlickr5
+##crater6.14.17_8.18.17 <- craterFlickr5
+##crater8.19.17_6.30.18 <- craterFlickr5
+
+craterFlickr5 <- rbind(crater1.1.13_5.30.13, crater5.31.13_7.17.13, crater7.18.13_1.25.14, crater1.26.14_5.20.14, crater5.21.14_7.5.14, crater7.6.14_8.18.14, crater8.19.14_10.3.14, crater10.4.14_6.12.15, crater6.13.15_7.15.15, crater7.16.15_8.9.15, crater8.10.15_10.16.15, crater10.17.15_6.13.16, crater6.14.16_6.29.16, crater6.30.16_7.31.16, crater8.1.16_1.16.17, crater1.17.17_6.13.17, crater6.14.17_8.18.17, crater8.19.17_6.30.18)
 
 dim(craterFlickr5)
 ```
@@ -815,7 +818,7 @@ craterFlickr5$Month <- substr(craterFlickr5$DateTaken, 6, 7)
 craterFlickr5$Day <- substr(craterFlickr5$DateTaken, 9, 10)
 
 craterUnique <- craterFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
-dim(craterUnique) ## 731 unique visitors
+dim(craterUnique) ## 711 unique visitor days
 
 ##monthly data
 craterMonth <- craterUnique%>%group_by(Year, Month)%>%summarise(Count = n())
@@ -838,5 +841,28 @@ craterYear <- craterUnique%>%group_by(Year)%>%summarise(Count = n())
 craterYear$Group = 1
 
 ggplot(data = craterYear[craterYear$Year != 2018,], aes(x = Year, y = Count, group = Group)) + geom_line()
+```
+
+Lake Mendota and Crater Lake Flickr to make for the bot ==> *next pull on 7/16/18*
+===
+
+### Lake Mendota
+
+```{r}
+mendotaTweets7.6.18 <- search_tweets(q = "Lake Mendota", n = 18000, include_rts = F)
+ts_plot(mendotaTweets7.6.18)
+mendotaTweets7.6.18
+
+save(mendotaTweets7.6.18, file = "medotaTweets7.6.18.rda")
+```
+
+### Crater Lake
+
+```{r}
+craterTweets7.6.18 <- search_tweets(q = "Crater Lake", n = 18000, include_rts = F)
+ts_plot(craterTweets7.6.18)
+craterTweets7.6.18
+
+save(craterTweets7.6.18, file = "craterTweets7.6.18.rda")
 ```
 
