@@ -363,3 +363,36 @@ summary(poismod1a)
 zipmod1a <- zeroinfl(VPYRounded ~ mean_TP + lake_area_ha + meandepth + pcturbancombined_hu12 + mean_secchi + Public.Beach + Public.Park, data = lakesDF)
 summary(zipmod1a)
 ```
+
+New Lakes Data Set *stats for Lake Mendota*
+===
+
+```{r}
+lakesDataSet <- read.csv("lakesDataSet.csv", header = T) ##this is just lake mendota
+dim(lakesDataSet)
+summary(lakesDataSet)
+
+##get only the years that we want
+lakesDataSet <- lakesDataSet%>%filter(year4 %in% c(2013, 2014, 2015, 2016, 2017))
+dim(lakesDataSet)
+summary(lakesDataSet)
+lakesDataSet
+
+##get monthly averages
+lakesMonthly <- lakesDataSet%>%group_by(year4, month)%>%
+  summarise(MeanAirTemp = mean(air_temp, na.rm = T), MeanRelHum = mean(rel_hum, na.rm = T), MeanWindSpeed = mean(wind_speed, na.rm = T), MeanWindDir = mean(wind_dir, na.rm = T), MeanChlor = mean(chlor, na.rm = T), MeanPhycocyanin = mean(phycocyanin, na.rm = T), MeanOptDoRaw = mean(opt_do_raw, na.rm = T), MeanOptDosatRaw = mean(opt_dosat_raw, na.rm = T), MeanOptWTemp = mean(opt_wtemp, na.rm = T), MeanPco2ppm = mean(pco2_ppm, na.rm = T), MeanPar = mean(par, na.rm = T))
+
+dim(lakesMonthly)
+summary(lakesMonthly)
+lakesMonthly
+
+lakesMonthly$year4 <- as.character(lakesMonthly$year4)
+lakesMonthly$month <- as.character(lakesMonthly$month)
+
+for (i in 1:nrow(lakesMonthly)) {
+  if (nchar(lakesMonthly$month[i]) == 1) {
+    lakesMonthly$month[i] <- paste("0", lakesMonthly$month[i], sep = "")
+  }
+}
+```
+
