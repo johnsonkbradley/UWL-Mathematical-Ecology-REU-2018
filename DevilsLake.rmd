@@ -7,18 +7,18 @@ Get the Flickr data for Devil's Lake
 ===
 
 ```{r}
-devilsFlickr5 <- GetPhotosBBox(query = "", startDate = "4/22/2018", bbox = "-89.772087,43.384152,-89.682693,43.43512")
+devilsFlickr5 <- GetPhotosBBox(query = "", startDate = "3/10/2018", bbox = "-89.772087,43.384152,-89.682693,43.43512")
 dim(devilsFlickr5)
 devilsFlickr5$DateTaken <- sapply(devilsFlickr5$id, GetDate)
 devilsFlickr5
 
-# devils1.1.13_9.5.14 <- devilsFlickr5
-# devils9.6.14_10.25.15 <- devilsFlickr5
-# devils10.26.15_9.4.16 <- devilsFlickr5
-# devils9.5.16_4.21.18 <- devilsFlickr5
-# devils4.22.18_6.23.18 <- devilsFlickr5
+#devils1.1.13_9.13.14 <- devilsFlickr5
+#devils9.14.14_10.25.15 <- devilsFlickr5
+#devils10.26.15_9.4.16 <- devilsFlickr5
+#devils9.5.16_3.9.18 <- devilsFlickr5
+#devils3.10.18_6.23.18 <- devilsFlickr5
 
-devilsFlickr5 <- rbind(devils1.1.13_9.5.14, devils9.6.14_10.25.15, devils10.26.15_9.4.16, devils9.5.16_4.21.18, devils4.22.18_6.23.18)
+devilsFlickr5 <- rbind(devils1.1.13_9.13.14, devils9.14.14_10.25.15, devils10.26.15_9.4.16, devils9.5.16_3.9.18, devils3.10.18_6.23.18)
 ```
 
 Get the Unique, Month, and Year stats for Devil's Lake
@@ -30,7 +30,7 @@ devilsFlickr5$Month <- substr(devilsFlickr5$DateTaken, 6, 7)
 devilsFlickr5$Day <- substr(devilsFlickr5$DateTaken, 9, 10)
 
 devilsUnique <- devilsFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
-dim(devilsUnique)## 213 unique photo visitors
+dim(devilsUnique)## 216 unique visitor days
 
 devilsMonth <- devilsUnique%>%group_by(Year, Month)%>%summarise(Count = n())
 devilsMonth$Date <- paste(devilsMonth$Year, devilsMonth$Month, sep = "-")
@@ -115,14 +115,79 @@ devilsDataMonthly
 ## Plot
 ggplot() +
   geom_line(data = devilsMonth2, aes(x = Date, y = Count, group = Group), col = "black" ,size = 2) +
-  geom_line(data = devilsDataMonthly[-67,], aes(x = Date, y = AvgGageHeight, group = Group), col = "red", size = 2) +
-  geom_line(data = devilsDataMonthly[-67,], aes(x = Date, y = TotalPrecip, group = Group), col = "blue", size = 2) +
+  geom_line(data = devilsMonth2, aes(x = Date, y = log(Visitors), group = Group), col = "blue", size = 2) +
   geom_vline(aes(xintercept = which(devilsDataMonthly$Date %in% c("2018-06", "2017-06", "2016-06", "2014-06"))), col = "green", lty = 2, size = 2) +
+  geom_vline(aes(xintercept = which(devilsDataMonthly$Date %in% c("2013-06", "2015-06"))), col = "grey", lty = 2, size = 2) +
   theme_bw() +
   scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
   theme(axis.text.x = element_text(angle = 90)) +
   xlab("Month") +
   ylab("Measure") +
   ggtitle("Devil's Lake Stats")
+```
+
+Devil's Lake Time Series
+===
+
+```{r}
+devilsTS <- ts(devilsMonth2$Count, start = c(2013,1), end = c(2018,6), frequency = 12)
+plot(devilsTS)
+devilsDECOMPSE <- decompose(devilsTS)
+plot(devilsDECOMPSE)
+devilsRandom <- devilsDECOMPSE$random
+devilsRandom <- as.vector(devilsRandom)
+devilsRandom
+devilsRamdonDF <- data.frame(Date = devilsMonth2$Date, Count = devilsRandom)
+devilsRamdonDF$SwimItch <- devilsRamdonDF$Date %in% c("2018-06", "2017-06", "2016-06", "2014-06")
+devilsRamdonDF$SwimItchLag <- devilsRamdonDF$Date %in% c("2018-07", "2017-07", "2016-07", "2014-07")
+devilsRamdonDF
+
+## random (residual) model
+devilsMod1 <- lm(Count ~ SwimItch + SwimItchLag, data = devilsRamdonDF)
+summary(devilsMod1) ## not significant
+anova(devilsMod1)
+
+##neither are significant
+t.test(Count ~ SwimItch, data = devilsRamdonDF)
+t.test(Count ~ SwimItchLag, data = devilsRamdonDF)
+```
+
+Actual visitor count
+===
+
+```{r}
+devilsActual <- read.csv("devilsLakeVisitors.csv", header = T)
+devilsActual$Year <- as.character(devilsActual$Year)
+devilsActual$Month <- as.character(devilsActual$Month)
+
+for (i in 1:nrow(devilsActual)) {
+  if (nchar(devilsActual$Month[i]) == 1) {
+    devilsActual$Month[i] <- paste("0", devilsActual$Month[i], sep = "")
+  }
+}
+
+devilsActual
+```
+
+Merge the actual counts with oir flickr visitors
+===
+
+```{r}
+devilsMonth2 <- devilsMonth2%>%left_join(devilsActual, by = c("Year", "Month"))
+devilsMonth2
+cor.test(devilsMonth2$Count, devilsMonth2$Visitors) ## 0.545
+
+summary(lm(log(Count + 1) ~ log(Visitors), data = devilsMonth2)) ##like Wood et al 2013
+##beta = .40604, p < .001, adjR2 = 0.4538
+summary(lm(Visitors ~ Count, data = devilsMonth2)) ## 30,778 per flickr visitor
+
+ggplot(data = devilsMonth2, aes(x = log(Count), y = log(Visitors))) + geom_point() +
+  geom_smooth(method = "lm", se = F, col = "red") +
+  theme_bw() +
+  ylim(values = c(0,14)) +
+  geom_abline(intercept = 0, slope = 1, col = "lightgrey") +
+  xlab("Log Number of Flickr Visitors per Month") +
+  ylab("Log Number of Actual Visitors per Month") +
+  ggtitle("Devil's Lake Actual Visitors vs Flickr Visitors")
 ```
 
