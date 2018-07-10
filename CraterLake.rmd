@@ -98,20 +98,25 @@ ggplot(data = craterMonthlyVisitors) +
 ggplot(data = craterMonthlyVisitors) +
   geom_line(aes(x = Date, y = RecVisitHours, group = Group), col = "blue", size = 2)
 
-ggplot(data = craterMonthlyVisitors, aes(y = RecVisit, x = Count)) +
+ggplot(data = craterMonthlyVisitors, aes(y = log(RecVisit), x = log(Count))) +
   theme_bw() +
+  geom_abline(intercept = 0, slope = 1, col = "lightgrey") +
+  ylim(values = c(0,13)) +
   geom_point(size = 2) +
   geom_smooth(method = "lm", se = F, col = "red") +
-  xlab("Number of Flickr Visitors per Month") +
-  ylab("Number of Recreational Visitors per Month") +
+  xlab("Log Number of Flickr Visitors per Month") +
+  ylab("Log Number of Recreational Visitors per Month") +
   ggtitle("Crater Lake Visitors per Month")
 
-mod1 <- lm(Count ~ RecVisit, data = craterMonthlyVisitors)
+##This is like the Wood et al 2013 article
+mod1 <- lm(log(Count) ~ log(RecVisit), data = craterMonthlyVisitors)
 summary(mod1) ## there is a significant relationship between Flickr Visitors and Number Rec Visits
 plot(mod1)
 
 mod1inv <- lm(RecVisit ~ Count, data = craterMonthlyVisitors)
 summary(mod1inv) ## 4141 rec visitors per 1 flickr visitor
+
+cor.test(log(craterMonthlyVisitors$RecVisit), log(craterMonthlyVisitors$Count)) ##.8477
 ```
 
 Crater Lake Time Series
