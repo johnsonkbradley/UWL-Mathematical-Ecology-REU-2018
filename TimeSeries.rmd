@@ -10,6 +10,7 @@ Libraries
 ```{r}
 library(forecast)
 library(reshape2)
+library(car)
 ```
 
 
@@ -122,6 +123,7 @@ plot(mononaTS)
 mononaDECOMP <- decompose(mononaTS)
 plot(mononaDECOMP) ## this one shows decent stuff
 plot(forecast(mononaTS))
+mononaDECOMP$random
 ```
 
 Lake Monona Data Set
@@ -298,4 +300,94 @@ menChlor
 menChlormenth <- menChlor%>%group_by(Year, menth)%>%summarise(MeanChlor = mean(RESULT_AMT, na.rm = T))
 menChlormenth
 ```
+
+Merging the lakes Data set with the Lake Mendota Visitor Data
+===
+
+```{r}
+mendotaMonth2 <- DATES%>%left_join(mendotaMonth, by = c("Year", "Month", "Date"))
+mendotaMonth2$Count[is.na(mendotaMonth2$Count)] <- 0
+mendotaMonth2$Group <- 1
+mendotaMonth2
+
+mendotaCombined <- mendotaMonth2%>%left_join(lakesMonthly, by = c("Year" = "year4", "Month" = "month"))
+mendotaCombined
+
+ggpairs(mendotaCombined[,-c(1,2,3,5)]) ##interesting relationships here
+
+##need to figure out which variables and months I should use
+ggplot(data = mendotaCombined, aes(x = Date)) +
+  geom_line(aes(y = Count, group = Group), size = 2) +
+  geom_line(aes(y = MeanAirTemp, group = Group), col = "red") +
+  geom_line(aes(y = log(MeanChlor), group = Group), col = "green") +
+  geom_line(aes(y = log(MeanPhycocyanin), group = Group), col = "purple") +
+  geom_line(aes(y = MeanOptDoRaw, group = Group), col = "gold") +
+  geom_line(aes(y = MeanOptWTemp, group = Group), col = "blue") +
+  theme_bw() +
+  scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
+  theme(axis.text.x = element_text(angle = 90))
+
+mendotaCombined[complete.cases(mendotaCombined),] ##17 out of the 66 months have complete data on everything, its the last 2 years worth of data then
+
+##Look at the p-values for the correlation
+cor.test(mendotaCombined$Count, mendotaCombined$MeanPar) ##0.01084
+cor.test(mendotaCombined$Count, mendotaCombined$MeanAirTemp) ## 0.004666
+cor.test(mendotaCombined$Count, mendotaCombined$MeanRelHum) ## 0.4557
+cor.test(mendotaCombined$Count, mendotaCombined$MeanChlor) ## 0.08661
+cor.test(mendotaCombined$Count, mendotaCombined$MeanPhycocyanin) ## 0.01963
+cor.test(mendotaCombined$Count, mendotaCombined$MeanOptDoRaw) ## 0.2008
+cor.test(mendotaCombined$Count, mendotaCombined$MeanOptDosatRaw) ## 0.002059
+cor.test(mendotaCombined$Count, mendotaCombined$MeanOptWTemp) ## 0.006724
+cor.test(mendotaCombined$Count, mendotaCombined$MeanPco2ppm) ## 0.2361
+```
+
+
+```{r}
+ggplot(data = mendotaCombined, aes(x = Date)) +
+  geom_line(aes(y = exp(Count), group = Group)) +
+  geom_line(aes(y = MeanChlor, group = Group), col = "green") +
+  geom_line(aes(y = MeanPhycocyanin, group = Group), col = "purple") +
+  theme_bw() +
+  scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  geom_vline(xintercept = which(mendotaCombined$Month == "06"), col = "red")
+```
+
+```{r}
+##looking at differences in months
+TukeyHSD(aov(Count ~ Month, data = mendotaCombined))
+
+##try running a model to see chlorophyll last or something
+menMod1 <- lm(Count ~ MeanPar + MeanAirTemp + MeanRelHum + MeanChlor + MeanPhycocyanin + MeanOptDoRaw + MeanOptDosatRaw + MeanOptWTemp + MeanPco2ppm, data = mendotaCombined)
+summary(menMod1)
+step(menMod1, direction = "backward") ##try a model with all and do some backwards stepwise regression just to see
+
+
+menMod2 <- lm(Count ~ MeanPar + MeanRelHum + MeanOptDoRaw + MeanOptDosatRaw + 
+    MeanOptWTemp + MeanPco2ppm, data = mendotaCombined)
+summary(menMod2) ## only using 17 observations tho, try to look at the most complete cases
+
+##complete cases look into
+menMod3 <- lm(Count ~ MeanAirTemp + MeanRelHum + MeanChlor + MeanPhycocyanin + MeanOptDoRaw + MeanOptDosatRaw + MeanOptWTemp, data = mendotaCombined)
+summary(menMod3) ##using 34 months
+step(menMod3, direction = "backward")
+
+menMod4 <- lm(Count ~ MeanAirTemp + MeanChlor + MeanPhycocyanin + 
+    MeanOptDoRaw + MeanOptDosatRaw + MeanOptWTemp, data = mendotaCombined)
+summary(menMod4) ## on 34 months, probably the best model we may have
+Anova(menMod4, type = "II")
+plot(menMod4)
+vif(menMod4)
+
+menMod5 <- lm(Count ~ MeanAirTemp + MeanChlor + MeanPhycocyanin + MeanOptDoRaw, data = mendotaCombined)
+summary(menMod5) ##only phycocyanin
+Anova(menMod5, type = "II") ##air temp and phycocyanin
+plot(menMod5)
+vif(menMod5)
+```
+
+```{r}
+plot(mendotaCombined$DiffChlor, mendotaCombined$Count)
+```
+
 
