@@ -19,6 +19,8 @@ devilsFlickr5
 #devils3.10.18_6.23.18 <- devilsFlickr5
 
 devilsFlickr5 <- rbind(devils1.1.13_9.13.14, devils9.14.14_10.25.15, devils10.26.15_9.4.16, devils9.5.16_3.9.18, devils3.10.18_6.23.18)
+
+devilsFlickr5$Name <- "Devil's Lake, WI"
 ```
 
 Get the Unique, Month, and Year stats for Devil's Lake
@@ -174,8 +176,8 @@ Merge the actual counts with oir flickr visitors
 
 ```{r}
 devilsMonth2 <- devilsMonth2%>%left_join(devilsActual, by = c("Year", "Month"))
-devilsMonth2
-cor.test(devilsMonth2$Count, devilsMonth2$Visitors) ## 0.545
+devilsMonth2$Dist <- 3.69
+cor.test(log(devilsMonth2$Count + 1), log(devilsMonth2$Visitors)) ## 0.497
 
 summary(lm(log(Count + 1) ~ log(Visitors), data = devilsMonth2)) ##like Wood et al 2013
 ##beta = .40604, p < .001, adjR2 = 0.4538
@@ -189,5 +191,86 @@ ggplot(data = devilsMonth2, aes(x = log(Count), y = log(Visitors))) + geom_point
   xlab("Log Number of Flickr Visitors per Month") +
   ylab("Log Number of Actual Visitors per Month") +
   ggtitle("Devil's Lake Actual Visitors vs Flickr Visitors")
+```
+
+
+Wisconsin State Parks Flickr vs Actual visitors
+===
+
+### merge all 10 state parks together
+
+```{r}
+stateParks <- rbind(devilsMonth2, dodgeMonth, kegonsaMonth, yellowstoneMonth, bigfootMonth, mirrorMonth, penninsulaMonth, pattisonMonth, buckhornMonth, perrotMonth)
+
+##graph
+ggplot(data = stateParks, aes(x = log(Count), y = log(Visitors))) + geom_point() +
+  geom_smooth(method = "lm", se = F, col = "red") +
+  theme_bw() +
+  ylim(values = c(0,14)) +
+  geom_abline(intercept = 0, slope = 1, col = "lightgrey") +
+  xlab("Log Number of Flickr Visitors per Month") +
+  ylab("Log Number of Actual Visitors per Month") +
+  ggtitle("Wisconsin State Parks Actual Visitors vs Flickr Visitors")
+
+##model
+stateMod <- lm(log(Count + 1) ~ log(Visitors), data = stateParks)
+summary(stateMod)
+##beta = 0.27899, p < 0.001, adjR2 = 0.3682
+
+##model with distances
+stateModDist <- lm(log(Count + 1) ~ log(Visitors) * Dist, data = stateParks)
+summary(stateModDist)
+```
+
+Merging all of the raw flickr5 data together to get the home location of the photo poster
+===
+
+```{r}
+stateFlickr5 <- rbind(devilsFlickr5, dodgeFlickr5, kegonsaFlickr5, yellowstoneFlickr5, bigfootFlickr5, mirrorFlickr5, penninsulaFlickr5, pattisonFlickr5, buckhornFlickr5, perrotFlickr5)
+
+dim(stateFlickr5)
+
+stateFlickr5$Year <- substr(stateFlickr5$DateTaken, 1, 4)
+stateFlickr5$Month <- substr(stateFlickr5$DateTaken, 6, 7)
+stateFlickr5$Day <- substr(stateFlickr5$DateTaken, 9, 10)
+
+stateUnique <- stateFlickr5%>%group_by(owner, Year, Month, Day, Name)%>%summarise(Count = n())
+dim(stateUnique) ## 726 unique photo user days
+stateUnique
+
+stateUnique$Location <- sapply(stateUnique$owner, GetHomeLocation)
+stateUnique$Location
+nullList <- stateUnique$Location
+
+for (i in 1:length(nullList)) {
+  if (is.null(nullList[[i]])) {
+    nullList[[i]] <- ""
+  }
+}
+length(nullList)
+nullList <- do.call(c, nullList)
+stateUnique$Location <- nullList
+
+stateUnique
+```
+
+gmapsdistance
+===
+
+```{r}
+gmapsdistance(origin = "Devil's+Lake+WI", destination = "", mode = "driving")$Distance / 1609
+
+replacePattern <- "[[:punct:]]?\\s"
+stateUnique$Name2 <- gsub(pattern = replacePattern, replacement = "+", x = stateUnique$Name)
+stateUnique$Location2 <- gsub(pattern = replacePattern, replacement = "+", x = stateUnique$Location)
+
+stateUnique$DistanceDriven <- NA
+##will need to figure out how to get it so that we dont use the "" locations
+for (i in 1:nrow(stateUnique)) {
+  if (nchar(stateUnique$Location2[i]) > 1) {
+    stateUnique$DistanceDriven[i] <- gmapsdistance(origin = stateUnique$Location2[i], destination = stateUnique$Name2[i], mode = "driving")$Distance / 1609
+  }
+}
+stateUnique
 ```
 
