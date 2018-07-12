@@ -254,7 +254,7 @@ stateUnique$Location <- nullList
 stateUnique
 ```
 
-gmapsdistance
+gmapsdistance calculator
 ===
 
 ```{r}
@@ -272,5 +272,70 @@ for (i in 1:nrow(stateUnique)) {
   }
 }
 stateUnique
+```
+
+Summarizing the distance results
+===
+
+```{r}
+mean(stateUnique$DistanceDriven, na.rm = T) ##378.8918
+median(stateUnique$DistanceDriven, na.rm = T) ##187.6209
+parksDistances <- stateUnique%>%group_by(Name)%>%summarise(MeanDistance = mean(DistanceDriven, na.rm = T), 
+                                                           MedianDistance = median(DistanceDriven, na.rm = T))
+parksDistances
+
+parksMelt <- melt(parksDistances)
+
+ggplot(data = parksMelt, aes(x = Name, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_bw() +
+  scale_fill_manual(values = c("darkblue", "lightblue"), name = "Measure") +
+  xlab("State Park") +
+  ylab("Driving Distance")
+
+stateUnique%>%arrange(DistanceDriven)
+hist(stateUnique$DistanceDriven, breaks = 100)
+```
+
+Filter down the state parks visitors to only legitimate distances
+===
+
+```{r}
+stateFiltered <- stateUnique%>%filter(!is.na(DistanceDriven))
+stateFiltered <- stateFiltered%>%filter(Location != "USA")
+stateFiltered <- stateFiltered%>%filter(Location != "United States")
+stateFiltered <- stateFiltered%>%filter(Location != "Wisconsin")
+stateFiltered <- stateFiltered%>%filter(Location != "Fitchburg, USA")
+stateFiltered <- stateFiltered%>%filter(Location != "same, USA" & Location != "The Universe, United States")
+dim(stateFiltered)
+
+ggplot(data = stateFiltered, aes(x = Name, y = DistanceDriven)) +
+  geom_boxplot(fill = "grey") +
+  theme_bw()
+
+```
+
+Computing days since the last visit to that park
+===
+
+```{r}
+##create the right date format
+stateFiltered$Date <- paste(stateFiltered$Day, stateFiltered$Month, stateFiltered$Year, sep = ".")
+
+stateFiltered <- stateFiltered%>%arrange(Name, owner, Year, Month, Day)
+
+##actually computing days since
+stateFiltered$DaysSince <- NA
+for (i in 2:nrow(stateFiltered)) {
+  if((stateFiltered$owner[i] == stateFiltered$owner[i-1]) & (stateFiltered$Name[i] == stateFiltered$Name[i-1])) {
+    stateFiltered$DaysSince[i] <- difftime(strptime(stateFiltered$Date[i], format = "%d.%m.%Y"),
+                                           strptime(stateFiltered$Date[i-1], format = "%d.%m.%Y"), units = "days")
+  }
+}
+stateFiltered
+
+summary(stateFiltered$DaysSince)
+
+ggplot(data = stateFiltered, aes(x = DistanceDriven, y = DaysSince)) + geom_point()
 ```
 
