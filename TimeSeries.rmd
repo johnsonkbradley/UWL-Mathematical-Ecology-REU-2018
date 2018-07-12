@@ -344,9 +344,9 @@ cor.test(mendotaCombined$Count, mendotaCombined$MeanPco2ppm) ## 0.2361
 
 ```{r}
 ggplot(data = mendotaCombined, aes(x = Date)) +
-  geom_line(aes(y = exp(Count), group = Group)) +
-  geom_line(aes(y = MeanChlor, group = Group), col = "green") +
-  geom_line(aes(y = MeanPhycocyanin, group = Group), col = "purple") +
+  geom_line(aes(y = exp(Count), group = Group), size = 2) +
+  geom_line(aes(y = MeanChlor, group = Group), col = "green", size = 2) +
+  geom_line(aes(y = MeanPhycocyanin, group = Group), col = "purple", size = 2) +
   theme_bw() +
   scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
   theme(axis.text.x = element_text(angle = 90)) +
