@@ -336,6 +336,77 @@ stateFiltered
 
 summary(stateFiltered$DaysSince)
 
-ggplot(data = stateFiltered, aes(x = DistanceDriven, y = DaysSince)) + geom_point()
+ggplot(data = stateFiltered) + geom_point(aes(x = DistanceDriven, y = DaysSince), alpha = 0.5, size = 5) +
+  geom_vline(xintercept = 50) + geom_hline(yintercept = 10) +ylim(limits=c(0,21)) + xlim(limits = c(0, 2600))
+
+
+##going to filter on less than 10 days and over 50 miles
 ```
+
+Get the length of trip for each visit
+===
+
+```{r}
+stateFiltered$LengthTrip <- 0
+stateFiltered$LengthTrip[stateFiltered$DistanceDriven > 50 & stateFiltered$DaysSince < 10 & !is.na(stateFiltered$DaysSince)] <- NA
+
+for (i in 1:nrow(stateFiltered)) {
+  if (is.na(stateFiltered$LengthTrip[i])) {
+    next
+  } else if (!is.na(stateFiltered$LengthTrip[i + 1])) {
+    stateFiltered$LengthTrip[i] <- 1
+  } else {
+    j = i + 1
+    while(j < nrow(stateFiltered) & is.na(stateFiltered$LengthTrip[j + 1])) {
+      j = j +1
+    }
+    stateFiltered$LengthTrip[i] <- sum(stateFiltered$DaysSince[(i+1):j]) + 1
+  }
+}
+
+stateFiltered
+
+ggplot(data = stateFiltered) +
+  theme_bw() +
+  geom_point(aes(x = DistanceDriven, y = LengthTrip), alpha = 0.5, size = 2) +
+  facet_wrap(~Name) +
+  xlab("Distance Driven (miles)") +
+  ylab("Length of Trip (days)")
+```
+
+Getting average stats for each state park
+===
+
+```{r}
+filteredSummary <- stateFiltered%>%filter(!is.na(LengthTrip))%>%group_by(Name)%>%summarise(MeanDistance = mean(DistanceDriven, na.rm = T),
+                                                                                           MedianDistance = median(DistanceDriven, na.rm = T),
+                                                                                           MeanLengthTrip = mean(LengthTrip, na.rm = T),
+                                                                                           MedianLengthTrip = median(LengthTrip, na.rm = T),
+                                                                                           NumberOfVisits = n(),
+                                                                                           NumberUniqueVisitors = n_distinct(owner))
+filteredSummary
+```
+
+
+
+Plot these on a map of Wisconsin *re-do this once I re-summarize things*
+===
+
+```{r}
+latLong <- read.csv("parks.csv", header = T)
+latLong <- latLong%>%left_join(filteredSummary, by = c("Park" = "Name"))
+latLong
+
+##Mapping the state parks with there size according to the median distance traveled by Flickr users to the park
+ggmap(wisconsin) +
+  geom_point(data = latLong, aes(x = Long, y = Lat, size = MedianDistance, fill = (NumberUniqueVisitors / NumberOfVisits)), col = "black", shape = 21) +
+  scale_size_continuous(range = c(3, 7), name = "Median Distance") +
+  scale_fill_gradient(name = "Percent of Unique Visitors", low = "cyan", high = "darkblue") +
+  xlim(limits = c(-93, -86)) +
+  ylim(limits = c(42, 47)) +
+  xlab("Longitude") +
+  ylab("Latitude")
+```
+
+
 
