@@ -409,4 +409,15 @@ ggmap(wisconsin) +
 ```
 
 
+Weather (monthly) for all of the parks from Jan 2013 - June 2018
+===
+
+```{r}
+devilsWeather <- read.csv("devilsLakeWeather.csv", header = T)
+parksWeather <- read.csv("parksWeather.csv", header = T)
+parksWeather <- rbind(parksWeather, devilsWeather)
+parksWeather
+
+ggplot(data = parksWeather,aes(x = DATE, y = PRCP, group = NAME, col = NAME)) + geom_line()
+```
 
