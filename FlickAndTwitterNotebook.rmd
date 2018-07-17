@@ -43,7 +43,6 @@ GetPhotos <- function(query, startDate) {
   return(photosDF)
 }
 
-
 ## This function will give you all of the flickr photos for a given query, starting from a certain date that the photos were taken within a certain bounding box
 ## Inputs: the search query you want, the earliest day you want to grab that a photo was taken on, along with the bounding box of the area you want, comma seperated minlong, minlat, maxlong, maxlat
 ## OUtputs: all flickr posts matching the qeury and the minimum photo taken date that you specified
@@ -857,14 +856,17 @@ ggplot(data = craterYear[craterYear$Year != 2018,], aes(x = Year, y = Count, gro
 Lake Mendota and Crater Lake Flickr to make for the bot ==> *next pull on 7/16/18*
 ===
 
+*We might need to refine how we search for these tweets, either by bounding box or radius method, and then maybe query specific as well depending on the location*
+
 ### Lake Mendota
 
 ```{r}
 mendotaTweets7.6.18 <- search_tweets(q = "Lake Mendota", n = 18000, include_rts = F)
 ts_plot(mendotaTweets7.6.18)
-mendotaTweets7.6.18
+mendotaTweets7.6.18 ## 2.6% have a geo-coordinate pair
 
-save(mendotaTweets7.6.18, file = "medotaTweets7.6.18.rda")
+#save(mendotaTweets7.6.18, file = "medotaTweets7.6.18.rda")
+#load("medotaTweets7.6.18.rda")
 ```
 
 ### Crater Lake
@@ -872,9 +874,10 @@ save(mendotaTweets7.6.18, file = "medotaTweets7.6.18.rda")
 ```{r}
 craterTweets7.6.18 <- search_tweets(q = "Crater Lake", n = 18000, include_rts = F)
 ts_plot(craterTweets7.6.18)
-craterTweets7.6.18
+craterTweets7.6.18 ## 8% have a geo-coordinate pair
 
-save(craterTweets7.6.18, file = "craterTweets7.6.18.rda")
+#save(craterTweets7.6.18, file = "craterTweets7.6.18.rda")
+#load("craterTweets7.6.18.rda")
 ```
 
 
@@ -1040,7 +1043,7 @@ mirrorMonth <- mirrorMonth%>%left_join(mirrorVisitors, by = c("Year", "Month"))
 mirrorMonth$Dist <- 2.50
 ```
 
-Penninsula State Park
+Peninsula State Park
 ===
 
 ```{r}
