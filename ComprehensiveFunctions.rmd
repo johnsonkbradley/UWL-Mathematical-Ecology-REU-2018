@@ -1,0 +1,343 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Libraries
+===
+
+```{r}
+##general
+library(dplyr)
+library(ggplot2)
+library(ggmap)
+library(car)
+library(GGally)
+library(lubridate)
+library(cluster)
+library(factoextra)
+library(rgdal)
+library(sf)
+library(pscl)
+library(gmapsdistance)
+library(forecast)
+library(reshape2)
+library(car)
+##social media
+library(rtweet)
+library(httr)
+library(jsonlite)
+```
+
+## Flickr
+
+Flickr functions *make better sub-sections for this*
+===
+
+```{r}
+GetPhotosBBox <- function(query, startDate, bbox) {
+  query <- gsub(" ", "+", query)
+  startDate <- gsub("/", "%2F", startDate)
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=",keys$key,"&text=",query,"&min_taken_date=",startDate,"&bbox=",bbox,"&sort=date-taken-asc&content_type=1&per_page=500&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  photos <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  photosDF <- photos$'photos'$photo
+  return(photosDF)
+}
+
+## This function will return the date that a flickr photo was taken, given the id number of the picture
+## Inputs: the id number of the picture you want to know the date taken
+## Outputs: the date taken
+GetDate <- function(id) {
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.getInfo&api_key=",keys$key,"&photo_id=",id,"&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  info <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  date <- info$`photo`$dates$taken
+  return(date)
+}
+
+## This function will return the home location listed by each flickr user
+## Inputs: user id
+## Outputs: home location for the poster of the photo
+GetHomeLocation <- function(user) {
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.people.getInfo&api_key=",keys$key,"&user_id=",user,"&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  info <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  location <- info$`person`$location$`_content`
+  return(location)
+}
+
+## This function will take the raw flickr posts data and will return a data frame containing the number of visitors per month
+## Inputs: raw flickr data for the past 5 years
+## Outputs: summary of the number of visitors per month
+GetVPM <- function(dataFlickr5) {
+  dataFlickr5$Year <- substr(dataFlickr5$DateTaken, 1, 4)
+  dataFlickr5$Month <- substr(dataFlickr5$DateTaken, 6, 7)
+  dataFlickr5$Day <- substr(dataFlickr5$DateTaken, 9, 10)
+
+  dataUnique <- dataFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+
+  dataMonth <- dataUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+  dataMonth$Date <- paste(dataMonth$Year, dataMonth$Month, sep = "-")
+  dataMonth$Group <- 1
+  
+  dataMonth2 <- DATES%>%left_join(dataMonth[,-c(1,2)], by = "Date")
+  dataMonth2$Count[is.na(dataMonth2$Count)] <- 0
+  dataMonth2$Group <- 1
+  
+  return(dataMonth2)
+}
+```
+
+Twitter and Flickr functions for DistanceDriven, DaysSince, and LengthTrip
+===
+
+## DistanceDriven functions
+
+```{r}
+## This function will get the distances between the user specified home location, and the park that they visited
+## Inputs: A twitter data frame
+## Outputs: twitter data frame
+TwitterDistance <- function(data) {
+  data$DistanceDriven <- NA
+  data$Name2 <- gsub(pattern = replacePattern, replacement = "+", x = data$Name)
+  data$Location2 <- gsub(pattern = replacePattern, replacement = "+", x = data$location)
+  
+  for (i in 1:nrow(data)) {
+    if (nchar(data$Location2[i]) > 1) {
+      data$DistanceDriven[i] <- gmapsdistance(origin = data$Location2[i], destination = data$Name2[i], mode = "driving")$Distance / 1609
+    }
+  }
+  return(data)
+}
+
+## This function will get the distances between the user specified home location, and the park that they visited
+## Inputs: A flickr data frame
+## Outputs: flick data frame
+FlickrDistance <- function(data) {
+  data$DistanceDriven <- NA
+  data$Name2 <- gsub(pattern = replacePattern, replacement = "+", x = data$Name)
+  data$Location2 <- gsub(pattern = replacePattern, replacement = "+", x = data$Location)
+  
+  for (i in 1:nrow(data)) {
+    if (nchar(data$Location2[i]) > 1) {
+      data$DistanceDriven[i] <- gmapsdistance(origin = data$Location2[i], destination = data$Name2[i], mode = "driving")$Distance / 1609
+    }
+  }
+  return(data)
+}
+```
+
+## DaysSince function
+
+```{r}
+## This function will compute the days since a visitor's last visit to a park
+## Inputs: flickr data frame
+## Outputs: flickr data frame
+FlickrComputeDaysSince <- function(data) {
+  data$Date <- paste(data$Day, data$Month, data$Year, sep = ".")
+
+  data <- data%>%arrange(Name, owner, Year, Month, Day)
+
+  ##actually computing days since
+  data$DaysSince <- NA
+  for (i in 2:nrow(data)) {
+    if((data$owner[i] == data$owner[i-1]) & (data$Name[i] == data$Name[i-1])) {
+      data$DaysSince[i] <- difftime(strptime(data$Date[i], format = "%d.%m.%Y"),
+                                           strptime(data$Date[i-1], format = "%d.%m.%Y"), units = "days")
+    }
+  }
+  return(data)
+}
+
+## This function will compute the days since a visitor's last visit to a park
+## Inputs: twitter data frame
+## Outputs: twitter data frame
+TwitterComputeDaysSince <- function(data) {
+  data$Date <- paste(data$Day, data$Month, data$Year, sep = ".")
+
+  data <- data%>%arrange(Name, user_id, Year, Month, Day)
+
+  ##actually computing days since
+  data$DaysSince <- NA
+  for (i in 2:nrow(data)) {
+    if((data$user_id[i] == data$user_id[i-1]) & (data$Name[i] == data$Name[i-1])) {
+      data$DaysSince[i] <- difftime(strptime(data$Date[i], format = "%d.%m.%Y"),
+                                           strptime(data$Date[i-1], format = "%d.%m.%Y"), units = "days")
+    }
+  }
+  return(data)
+}
+```
+
+##LengthTrip function
+
+```{r}
+## Computes the length of the trip for a visitor to a park
+## Inputs: a twitter or flickr data frame
+## Outputs: a twitter or flickr data frame
+ComputeLenghtTrip <- function(data) {
+  data$LengthTrip <- 0
+  data$LengthTrip[data$DistanceDriven > 50 & data$DaysSince < 10 & !is.na(data$DaysSince)] <- NA
+
+  for (i in 1:nrow(data)) {
+   if (is.na(data$LengthTrip[i])) {
+      next
+   } else if (!is.na(data$LengthTrip[i + 1])) {
+     data$LengthTrip[i] <- 1
+    } else {
+     j = i + 1
+     while(j < nrow(data) & is.na(data$LengthTrip[j + 1])) {
+       j = j +1
+      }
+      data$LengthTrip[i] <- sum(data$DaysSince[(i+1):j]) + 1
+    }
+  }
+  return(data)
+}
+```
+
+
+Maybe make a function that will actually get the Flickr data automatically
+===
+
+-This would have the same arguments at GetPhotosBBox, but will automatically loop through the years and get the data from it
+
+-Troubles could be with exceeding the api limit and how to deal with this, might not be a problem though with Wisconsin as the most we got for 5 years was 1500 photos max (and rounding up) so thatd be roughly 1600 at max probably
+
+-Could also not have to worry about this if were are just pulling data weekly/every 9 days alongside twitter
+
+Other Flickr function ideas
+===
+
+-Make a get Unique data frame function easily?? just a thought.
+
+## Twitter *next pulls on 7/25/18*
+
+Lake Mendota
+
+```{r}
+mendota7.16.18 <- search_tweets(q = "Lake Mendota", n = 18000, include_rts = F, geocode = "43.104395,-89.415459,5mi")
+ts_plot(mendota7.16.18)
+mendota7.16.18
+
+##save(mendota7.16.18, file = "mendota7.16.18.rda")
+```
+
+Crater Lake
+
+```{r}
+crater7.16.18 <- search_tweets(q = "Crater Lake", n = 18000, include_rts = F, geocode = "42.945247,-122.108234,10mi")
+ts_plot(crater7.16.18)
+crater7.16.18
+
+##save(crater7.16.18, file = "crater7.16.18.rda")
+```
+
+Devil's Lake State Park
+
+```{r}
+devils7.16.18 <- search_tweets(q = "Devil's Lake", n = 18000, include_rts = F, geocode = "43.415606,-89.730330,2mi")
+ts_plot(devils7.16.18)
+devils7.16.18$Name <- "Devil's Lake, WI"
+devils7.16.18
+##save(devils7.16.18, file = "devils7.16.18.rda")
+```
+
+Governer Dodge State Park
+
+```{r}
+dodge7.16.18 <- search_tweets(q = "Governer Dodge", n = 18000, include_rts = F, geocode = "43.025734,-90.103683,2.5mi")
+ts_plot(dodge7.16.18)
+dodge7.16.18 ##no tweets for this time period
+```
+
+Lake Kegonsa State Park
+
+```{r}
+kegonsa7.16.18 <- search_tweets(q = "Lake Kegonsa", n = 18000, include_rts = F, geocode = "42.968061,-89.244261,2mi")
+ts_plot(kegonsa7.16.18)
+kegonsa7.16.18 ##no tweets for this time period
+```
+
+Yellowstone Lake State Park
+
+```{r}
+yellowstone7.16.18 <- search_tweets(q = "Yellowstone Lake", n = 18000, include_rts = F, geocode = "42.769699,-89.997597,2.5mi")
+ts_plot(yellowstone7.16.18)
+yellowstone7.16.18 ##no tweets for this time period
+```
+
+Big Foot Beach State Park
+
+```{r}
+bigfoot7.16.18 <- search_tweets(q = "Big Foot", n = 18000, include_rts = F, geocode = "42.568885,-88.432732,1mi")
+ts_plot(bigfoot7.16.18)
+bigfoot7.16.18 ##no tweets for this time period
+```
+
+Mirror Lake State Park
+
+```{r}
+mirror7.16.18 <- search_tweets(q = "Mirror Lake", n = 18000, include_rts = F, geocode = "43.566732,-89.816150,1.5mi")
+ts_plot(mirror7.16.18)
+mirror7.16.18$Name <- "Mirror Lake State Park, WI"
+
+##save(mirror7.16.18, file = "mirror7.16.18.rda")
+```
+
+Peninsula State Park
+
+```{r}
+peninsula7.16.18 <- search_tweets(q = "Peninsula", n = 18000, include_rts = F, geocode = "45.148148,-87.219086,2.5mi")
+ts_plot(peninsula7.16.18)
+peninsula7.16.18$Name <- "Peninsula State Park, WI"
+
+##save(peninsula7.16.18, file = "peninsula7.16.18.rda")
+```
+
+Pattison State Park
+
+```{r}
+pattison7.16.18 <- search_tweets(q = "Pattison", n = 18000, include_rts = F, geocode = "46.529343,-92.120018,2mi")
+ts_plot(pattison7.16.18)
+pattison7.16.18 ##no tweets for this time period
+```
+
+Buckhorn State Park
+
+```{r}
+buckhorn7.16.18 <- search_tweets(q = "Buckhorn", n = 18000, include_rts = F, geocode = "43.934230,-89.995221,3mi")
+ts_plot(buckhorn7.16.18)
+buckhorn7.16.18$Name <- "Buckhorn State Park, WI"
+buckhorn7.16.18
+##save(buckhorn7.16.18, file = "buckhorn7.16.18.rda")
+```
+
+Perrot State Park
+
+```{r}
+perrot7.16.18 <- search_tweets(q = "Perrot", n = 18000, include_rts = F, geocode = "44.024749,-91.490942,4.5mi")
+ts_plot(perrot7.16.18)
+perrot7.16.18 ##no tweets for this time period
+```
+
+Combine all of the twitter data sets that we have for the state parks
+===
+
+```{r}
+twitter7.16.18 <- rbind(devils7.16.18, mirror7.16.18, peninsula7.16.18, buckhorn7.16.18)
+twitter7.16.18$Year <- substr(twitter7.16.18$created_at, 1, 4)
+twitter7.16.18$Month <- substr(twitter7.16.18$created_at, 6, 7)
+twitter7.16.18$Day <- substr(twitter7.16.18$created_at, 9, 10)
+
+##later, if we already have the feelings, might have to incorporate and average sentiment into this unique function
+twitter7.16.18Unique <- twitter7.16.18%>%group_by(Name, location, user_id, Year, Month, Day)%>%summarise(Count = n())
+twitter7.16.18Unique <- TwitterDistance(twitter7.16.18Unique)
+twitter7.16.18Unique <- TwitterComputeDaysSince(twitter7.16.18Unique)
+twitter7.16.18Unique <- ComputeLenghtTrip(twitter7.16.18Unique)
+twitter7.16.18Unique
+
+twitter7.16.18Unique%>%group_by(Name)%>%summarise(MeanDistance = mean(DistanceDriven, na.rm = T),
+                                                  MedianDistance = median(DistanceDriven, na.rm = T),
+                                                  MeanLengthTrip = mean(LengthTrip, na.rm = T),
+                                                  MedianLengthTrip = median(LengthTrip, na.rm = T))
+```
+
