@@ -919,7 +919,7 @@ dodgeFlickr5##This is all the photos from Governer Dodge State Park
 dodgeFlickr5$Name <- "Governer Dodge State Park, WI"
 
 dodgeMonth <- GetVPM(dodgeFlickr5)
-dodgeMonth
+dodgeMonth$Name <- "Governer Dodge State Park, WI"
 
 dodgeVisitors <- read.csv("governerDodgeVisitors.csv", header = T)
 dodgeVisitors$Month <- as.character(dodgeVisitors$Month)
@@ -946,7 +946,7 @@ kegonsaFlickr5
 kegonsaFlickr5$Name <- "Lake Kegonsa State Park, WI"
 
 kegonsaMonth <- GetVPM(kegonsaFlickr5)
-kegonsaMonth
+kegonsaMonth$Name <- "Lake Kegonsa State Park, WI"
 
 kegonsaVisitors <- read.csv("kegonsaVisitors.csv", header = T)
 kegonsaVisitors$Month <- as.character(kegonsaVisitors$Month)
@@ -973,7 +973,7 @@ yellowstoneFlickr5
 yellowstoneFlickr5$Name <- "Yellowstone Lake State Park, WI"
 
 yellowstoneMonth <- GetVPM(yellowstoneFlickr5)
-yellowstoneMonth
+yellowstoneMonth$Name <- "Yellowstone Lake State Park, WI"
 
 yellowstoneVisitors <- read.csv("yellowstoneVisitors.csv", header = T)
 yellowstoneVisitors$Month <- as.character(yellowstoneVisitors$Month)
@@ -1000,7 +1000,7 @@ bigfootFlickr5
 bigfootFlickr5$Name <- "Big Foot Lake State Park, WI"
 
 bigfootMonth <- GetVPM(bigfootFlickr5)
-bigfootMonth
+bigfootMonth$Name <- "Big Foot Beach State Park, WI"
 
 bigfootVisitors <- read.csv("bigfootVisitors.csv", header = T)
 bigfootVisitors$Month <- as.character(bigfootVisitors$Month)
@@ -1027,7 +1027,7 @@ mirrorFlickr5
 mirrorFlickr5$Name <- "Mirror Lake State Park, WI"
 
 mirrorMonth <- GetVPM(mirrorFlickr5)
-mirrorMonth
+mirrorMonth$Name <- "Mirror Lake State Park, WI"
 
 mirrorVisitors <- read.csv("mirrorVisitors.csv", header = T)
 mirrorVisitors$Month <- as.character(mirrorVisitors$Month)
@@ -1065,6 +1065,7 @@ dim(penninsulaFlickr5)
 
 penninsulaMonth <- GetVPM(penninsulaFlickr5)
 penninsulaMonth$Dist <- 2.31
+penninsulaMonth$Name <- "Penninsula State Park, WI"
 ```
 
 Pattison State Park
@@ -1078,7 +1079,7 @@ pattisonFlickr5
 pattisonFlickr5$Name <- "Pattison State Park, WI"
 
 pattisonMonth <- GetVPM(pattisonFlickr5)
-pattisonMonth
+pattisonMonth$Name <- "Pattison State Park, WI"
 
 pattisonVisitors <- read.csv("pattisonVisitors.csv", header = T)
 pattisonVisitors$Month <- as.character(pattisonVisitors$Month)
@@ -1105,7 +1106,7 @@ buckhornFlickr5
 buckhornFlickr5$Name <- "Buckhorn State Park, WI"
 
 buckhornMonth <- GetVPM(buckhornFlickr5)
-buckhornMonth
+buckhornMonth$Name <- "Buckhorn State Park, WI"
 
 buckhornVisitors <- read.csv("buckhornVisitors.csv", header = T)
 buckhornVisitors$Month <- as.character(buckhornVisitors$Month)
@@ -1132,7 +1133,7 @@ perrotFlickr5
 perrotFlickr5$Name <- "Perrot State Park, WI"
 
 perrotMonth <- GetVPM(perrotFlickr5)
-perrotMonth
+perrotMonth$Name <- "Perrot State Park, WI"
 
 perrotVisitors <- read.csv("perrotVisitors.csv", header = T)
 perrotVisitors$Month <- as.character(perrotVisitors$Month)
