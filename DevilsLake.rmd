@@ -54,18 +54,18 @@ DATES
 devilsMonth2 <- DATES%>%left_join(devilsMonth[,-c(1,2)], by = "Date")
 devilsMonth2$Count[is.na(devilsMonth2$Count)] <- 0
 devilsMonth2$Group <- 1
-devilsMonth2
+devilsMonth2$Name <- "Devil's Lake, WI"
 
 ##Plot
 ggplot(data = devilsMonth2, aes(x = Date, y = Count, group = Group, col = Year)) +
   geom_line(size = 2) +
-  theme_bw() +
+  theme_bw(base_size = 14) +
   scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
   theme(axis.text.x = element_text(angle = 90)) +
   scale_color_manual(values = c("red", "orange", "gold", "green", "blue", "purple")) +
   xlab("Month") +
   ylab("Number of Flickr Visitors") +
-  ggtitle("Devil's Lake Lake Flickr Visitors Per Month") + 
+  ggtitle("Devil's Lake Flickr Visitors Per Month") + 
   geom_smooth(se = F, method = "lm", col = "black")
 ```
 
@@ -203,14 +203,16 @@ Wisconsin State Parks Flickr vs Actual visitors
 stateParks <- rbind(devilsMonth2, dodgeMonth, kegonsaMonth, yellowstoneMonth, bigfootMonth, mirrorMonth, penninsulaMonth, pattisonMonth, buckhornMonth, perrotMonth)
 
 ##graph
-ggplot(data = stateParks, aes(x = log(Count), y = log(Visitors))) + geom_point() +
-  geom_smooth(method = "lm", se = F, col = "red") +
-  theme_bw() +
+ggplot(data = stateParks, aes(x = log(Count), y = log(Visitors))) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = F, col = "red", size = 2) +
+  theme_bw(base_size = 14) +
+  theme(axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14), plot.title = element_text(size = 16), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14)) +
   ylim(values = c(0,14)) +
-  geom_abline(intercept = 0, slope = 1, col = "lightgrey") +
+  geom_abline(intercept = 0, slope = 1, col = "lightgrey", size = 2) +
   xlab("Log Number of Flickr Visitors per Month") +
   ylab("Log Number of Actual Visitors per Month") +
-  ggtitle("Wisconsin State Parks Actual Visitors vs Flickr Visitors")
+  ggtitle("Wisconsin State Parks: Actual Visitors vs Flickr Visitors")
 
 ##model
 stateMod <- lm(log(Count + 1) ~ log(Visitors), data = stateParks)
@@ -220,6 +222,8 @@ summary(stateMod)
 ##model with distances
 stateModDist <- lm(log(Count + 1) ~ log(Visitors) * Dist, data = stateParks)
 summary(stateModDist)
+
+summary(lm(Visitors ~ Count, data = stateParks)) ## 1 Flickr =about 18,000 actual visitors (for these 10 together)
 ```
 
 Merging all of the raw flickr5 data together to get the home location of the photo poster
@@ -348,7 +352,7 @@ Get the length of trip for each visit
 
 ```{r}
 stateFiltered$LengthTrip <- 0
-stateFiltered$LengthTrip[stateFiltered$DistanceDriven > 50 & stateFiltered$DaysSince < 10 & !is.na(stateFiltered$DaysSince)] <- NA
+stateFiltered$LengthTrip[stateFiltered$DistanceDriven > 50 & stateFiltered$DaysSince < 7 & !is.na(stateFiltered$DaysSince)] <- NA
 
 for (i in 1:nrow(stateFiltered)) {
   if (is.na(stateFiltered$LengthTrip[i])) {
@@ -400,12 +404,14 @@ latLong
 ##Mapping the state parks with there size according to the median distance traveled by Flickr users to the park
 ggmap(wisconsin) +
   geom_point(data = latLong, aes(x = Long, y = Lat, size = MedianDistance, fill = (NumberUniqueVisitors / NumberOfVisits)), col = "black", shape = 21) +
-  scale_size_continuous(range = c(3, 7), name = "Median Distance") +
+  scale_size_continuous(range = c(3, 12), name = "Median Distance") +
   scale_fill_gradient(name = "Percent of Unique Visitors", low = "cyan", high = "darkblue") +
   xlim(limits = c(-93, -86)) +
   ylim(limits = c(42, 47)) +
   xlab("Longitude") +
-  ylab("Latitude")
+  ylab("Latitude") +
+  ggtitle("State Parks in Wisconsin") +
+  theme(axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14), plot.title = element_text(size = 16))
 ```
 
 
@@ -420,4 +426,136 @@ parksWeather
 
 ggplot(data = parksWeather,aes(x = DATE, y = PRCP, group = NAME, col = NAME)) + geom_line()
 ```
+
+## Incorporate the park name into the parks weather data set
+
+```{r}
+parksWeather$ParkName <- ifelse(parksWeather$NAME == "ARGYLE, WI US", "Yellowstone Lake State Park, WI",
+                                ifelse(parksWeather$NAME == "DODGEVILLE, WI US", "Governer Dodge State Park, WI",
+                                       ifelse(parksWeather$NAME == "LAKE GENEVA 0.6 ENE, WI US", "Big Foot Beach State Park, WI",
+                                              ifelse(parksWeather$NAME == "NECEDAH 5 WNW, WI US", "Buckhorn State Park, WI",
+                                                     ifelse(parksWeather$NAME == "PATTISON STATE PARK, WI US", "Pattison State Park, WI",
+                                                            ifelse(parksWeather$NAME == "STOUGHTON, WI US", "Lake Kegonsa State Park, WI",
+                                                                   ifelse(parksWeather$NAME == "STURGEON BAY EXPERIMENTAL FARM, WI US", "Penninsula State Park, WI",
+                                                                          ifelse(parksWeather$NAME == "TREMPEALEAU 1.8 NW, WI US", "Perrot State Park, WI",
+                                                                                 ifelse(parksWeather$NAME == "WISCONSIN DELLS, WI US", "Mirror Lake State Park, WI", "Devil's Lake, WI")))))))))
+```
+
+## Megre the weather and visitor counts together
+
+```{r}
+parksFacts <- stateParks%>%left_join(parksWeather, by = c("Name" = "ParkName", "Date" = "DATE"))
+parksFacts
+parksFacts%>%filter(Name == "Devil's Lake, WI")
+```
+
+## Plot some interesting variables
+
+```{r}
+ggplot(data = parksFacts%>%filter(Name %in% c("Devil's Lake, WI", "Penninsula State Park, WI", "Perrot State Park, WI", "Mirror Lake State Park, WI")), aes(x = Date)) +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14), strip.text.x = element_text(size = 14), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), plot.title = element_text(size = 16)) +
+  facet_wrap(~Name) +
+  geom_line(aes(y = Count, group = Group), col = "black", size = 2) +
+  scale_x_discrete(labels = c(rep(c("Jan", "", "", "", "", "", "Jul", "", "", "", "", ""), 5), "Jan", "", "", "", "", "")) +
+  xlab("Month") +
+  ylab("Number of Flickr Visitors") +
+  ggtitle("Number of Flickr Visitors per Month")
+  
+```
+
+```{r}
+ggpairs(parksFacts%>%filter(Name == "Devil's Lake, WI")%>%select(Count, Visitors, DP01, DP10, DX32, DX70, DX90, PRCP, SNOW, TAVG))
+
+ggplot(data = parksFacts, aes(x = log(Visitors), y = TAVG)) +
+  geom_point() +
+  theme_bw() +
+  geom_smooth(method = "lm", se = F, col = "red")
+```
+
+Devil's Lake Weather Graphs for Poster
+===
+
+```{r}
+devilsMelt <- melt(parksFacts%>%filter(Name == "Devil's Lake, WI", Date < "2016-07")%>%select(Date, Count, DX70))
+devilsMelt
+
+ggplot(data = devilsMelt, aes(x = Date, y = value, group = variable, col = variable)) +
+  geom_line(size = 2) +
+  theme_bw() +
+  theme(legend.text = element_text(size = 14),axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), plot.title = element_text(size = 16)) +
+  scale_x_discrete(labels = c(rep(c("Jan", "", "", "", "", "", "Jul", "", "", "", "", ""), 5), "Jan", "", "", "", "", "")) +
+  scale_color_manual(values = c("black", "red"), name = "", labels = c("Flickr Visitor Count", expression("Days Above 70" ~degree~ "F"))) +
+  xlab("Month") +
+  ylab("Count") +
+  ggtitle("Devil's Lake Visitor Count and Temperature")
+```
+
+Re-look at swimmers itch
+===
+
+## plot
+
+```{r}
+ggplot(data = parksFacts%>%filter(Name == "Devil's Lake, WI")) +
+  geom_line(aes(x = Date, y = Count, group = Group), col = "black", size = 2) +
+  geom_vline(aes(xintercept = 18), col = "green", lty = 2, size = 2) +
+  geom_vline(aes(xintercept = 42), col = "green", lty = 2, size = 2) +
+  geom_vline(aes(xintercept = 54), col = "green", lty = 2, size = 2) +
+  ##geom_vline(aes(xintercept = 66), col = "green", lty = 2, size = 2) +
+  geom_vline(aes(xintercept = 6), col = "grey", lty = 2, size = 2) +
+  geom_vline(aes(xintercept = 30), col = "grey", lty = 2, size = 2) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_x_discrete(labels = c(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 5), "Jan", "Feb", "Mar", "Apr", "May", "Jun")) +
+  ggtitle("Flickr Visitors Compared to Swimmer's Itch (Green)") +
+  ylab("Visitor Count")
+```
+
+## data
+
+```{r}
+devils <- parksFacts%>%filter(Name == "Devil's Lake, WI", Month %in% c("06", "07", "08"))
+devils$Itch <- ifelse(devils$Year %in% c("2014", "2016", "2017", "2018"), T, F)
+
+anova(aov(Count ~ Itch, data = devils)) ##shows no difference in whether swimmer's itch occured that summer Itch
+```
+
+Devil's Lake Sentimen
+===
+
+```{r}
+load("devils7.16.18.sentiment.rda")
+sentiment_sen ##the file from above
+```
+
+```{r}
+devils7.16.18sentiment <- sentiment_sen%>%group_by(element_id)%>%summarise(Sentiment = sum(sentiment))
+devils7.16.18sentiment
+devils7.16.18a <- devils7.16.18[-13,]
+devils7.16.18a <- cbind(devils7.16.18a, devils7.16.18sentiment)
+devils7.16.18a
+
+devilsTweetsDist <- devils7.16.18a%>%left_join(twitter7.16.18Unique)
+devilsTweetsDist
+devilsTweetsDist[unique(devilsTweetsDist$text),]
+
+devilsTweetsUnique <- unique(devilsTweetsDist%>%select(text, Sentiment, DistanceDriven))
+
+summary(devilsTweetsUnique)
+cor.test(devilsTweetsUnique$Sentiment, devilsTweetsUnique$DistanceDriven)
+
+##plot
+ggplot(data = devilsTweetsUnique, aes(y = Sentiment)) +
+  geom_boxplot(fill = "grey") +
+  theme_bw() +
+  geom_hline(yintercept = 0, col = "red", lty = 2, size = 2) +
+  theme(axis.text.x=element_blank(), axis.title.y = element_text(size = 14)) +
+  ylab(expression("Negative " %<-% " Sentiment " %->% " Positive")) +
+  ggtitle("Devil's Lake Sentiments July 6, 2018 - July 16, 2018")
+
+
+ggplot(data = devilsTweetsUnique, aes(x = DistanceDriven, y = Sentiment)) + geom_point()
+```
+
 
