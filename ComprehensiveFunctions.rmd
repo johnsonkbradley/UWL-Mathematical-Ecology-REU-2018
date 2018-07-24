@@ -209,114 +209,124 @@ Other Flickr function ideas
 
 -Make a get Unique data frame function easily?? just a thought.
 
-## Twitter *next pulls on 7/25/18*
+## Twitter *next pulls on 7/30/18*
 
 Lake Mendota
 
 ```{r}
-mendota7.16.18 <- search_tweets(q = "Lake Mendota", n = 18000, include_rts = F, geocode = "43.104395,-89.415459,5mi")
-ts_plot(mendota7.16.18)
-mendota7.16.18
+mendota7.23.18 <- search_tweets(q = "Lake Mendota", n = 18000, include_rts = F, geocode = "43.104395,-89.415459,5mi")
+ts_plot(mendota7.23.18)
+mendota7.23.18$Name <- "Lake Mendota, WI"
 
 ##save(mendota7.16.18, file = "mendota7.16.18.rda")
+##save(mendota7.23.18, file = "mendota7.23.18.rda")
 ```
 
 Crater Lake
 
 ```{r}
-crater7.16.18 <- search_tweets(q = "Crater Lake", n = 18000, include_rts = F, geocode = "42.945247,-122.108234,10mi")
-ts_plot(crater7.16.18)
-crater7.16.18
+crater7.23.18 <- search_tweets(q = "Crater Lake", n = 18000, include_rts = F, geocode = "42.945247,-122.108234,10mi")
+ts_plot(crater7.23.18)
+crater7.23.18$Name <- "Crater Lake, OR"
 
 ##save(crater7.16.18, file = "crater7.16.18.rda")
+##save(crater7.23.18, file = "crater7.23.18.rda")
 ```
 
 Devil's Lake State Park
 
 ```{r}
-devils7.16.18 <- search_tweets(q = "Devil's Lake", n = 18000, include_rts = F, geocode = "43.415606,-89.730330,2mi")
-ts_plot(devils7.16.18)
-devils7.16.18$Name <- "Devil's Lake, WI"
-devils7.16.18
+devils7.23.18 <- search_tweets(q = "Devil's Lake", n = 18000, include_rts = F, geocode = "43.415606,-89.730330,2mi")
+ts_plot(devils7.23.18)
+devils7.23.18$Name <- "Devil's Lake, WI"
+devils7.23.18
+
 ##save(devils7.16.18, file = "devils7.16.18.rda")
+##save(devils7.23.18, file = "devils7.23.18.rda")
 ```
 
 Governer Dodge State Park
 
 ```{r}
-dodge7.16.18 <- search_tweets(q = "Governer Dodge", n = 18000, include_rts = F, geocode = "43.025734,-90.103683,2.5mi")
-ts_plot(dodge7.16.18)
-dodge7.16.18 ##no tweets for this time period
+dodge7.23.18 <- search_tweets(q = "Governer Dodge", n = 18000, include_rts = F, geocode = "43.025734,-90.103683,2.5mi")
+ts_plot(dodge7.23.18)
+dodge7.23.18 ##no tweets for this time period
 ```
 
 Lake Kegonsa State Park
 
 ```{r}
-kegonsa7.16.18 <- search_tweets(q = "Lake Kegonsa", n = 18000, include_rts = F, geocode = "42.968061,-89.244261,2mi")
-ts_plot(kegonsa7.16.18)
-kegonsa7.16.18 ##no tweets for this time period
+kegonsa7.23.18 <- search_tweets(q = "Lake Kegonsa", n = 18000, include_rts = F, geocode = "42.968061,-89.244261,2mi")
+ts_plot(kegonsa7.23.18)
+kegonsa7.23.18 ##no tweets for this time period
 ```
 
 Yellowstone Lake State Park
 
 ```{r}
-yellowstone7.16.18 <- search_tweets(q = "Yellowstone Lake", n = 18000, include_rts = F, geocode = "42.769699,-89.997597,2.5mi")
-ts_plot(yellowstone7.16.18)
-yellowstone7.16.18 ##no tweets for this time period
+yellowstone7.23.18 <- search_tweets(q = "Yellowstone Lake", n = 18000, include_rts = F, geocode = "42.769699,-89.997597,2.5mi")
+ts_plot(yellowstone7.23.18)
+yellowstone7.23.18 ##no tweets for this time period
 ```
 
 Big Foot Beach State Park
 
 ```{r}
-bigfoot7.16.18 <- search_tweets(q = "Big Foot", n = 18000, include_rts = F, geocode = "42.568885,-88.432732,1mi")
-ts_plot(bigfoot7.16.18)
-bigfoot7.16.18 ##no tweets for this time period
+bigfoot7.23.18 <- search_tweets(q = "Big Foot", n = 18000, include_rts = F, geocode = "42.568885,-88.432732,1mi")
+ts_plot(bigfoot7.23.18)
+bigfoot7.23.18 ##no tweets for this time period
 ```
 
 Mirror Lake State Park
 
 ```{r}
-mirror7.16.18 <- search_tweets(q = "Mirror Lake", n = 18000, include_rts = F, geocode = "43.566732,-89.816150,1.5mi")
-ts_plot(mirror7.16.18)
-mirror7.16.18$Name <- "Mirror Lake State Park, WI"
+mirror7.23.18 <- search_tweets(q = "Mirror Lake", n = 18000, include_rts = F, geocode = "43.566732,-89.816150,1.5mi")
+ts_plot(mirror7.23.18)
+mirror7.23.18$Name <- "Mirror Lake State Park, WI"
+mirror7.23.18
 
 ##save(mirror7.16.18, file = "mirror7.16.18.rda")
+##save(mirror7.23.18, file = "mirror7.23.18.rda")
 ```
 
 Peninsula State Park
 
 ```{r}
-peninsula7.16.18 <- search_tweets(q = "Peninsula", n = 18000, include_rts = F, geocode = "45.148148,-87.219086,2.5mi")
-ts_plot(peninsula7.16.18)
-peninsula7.16.18$Name <- "Peninsula State Park, WI"
+peninsula7.23.18 <- search_tweets(q = "Peninsula", n = 18000, include_rts = F, geocode = "45.148148,-87.219086,2.5mi")
+ts_plot(peninsula7.23.18)
+peninsula7.23.18$Name <- "Peninsula State Park, WI"
+peninsula7.23.18
 
 ##save(peninsula7.16.18, file = "peninsula7.16.18.rda")
+##save(peninsula7.23.18, file = "peninsula7.23.18.rda")
 ```
 
 Pattison State Park
 
 ```{r}
-pattison7.16.18 <- search_tweets(q = "Pattison", n = 18000, include_rts = F, geocode = "46.529343,-92.120018,2mi")
-ts_plot(pattison7.16.18)
-pattison7.16.18 ##no tweets for this time period
+pattison7.23.18 <- search_tweets(q = "Pattison", n = 18000, include_rts = F, geocode = "46.529343,-92.120018,2mi")
+ts_plot(pattison7.23.18)
+pattison7.23.18 ##no tweets for this time period
 ```
 
 Buckhorn State Park
 
 ```{r}
-buckhorn7.16.18 <- search_tweets(q = "Buckhorn", n = 18000, include_rts = F, geocode = "43.934230,-89.995221,3mi")
-ts_plot(buckhorn7.16.18)
-buckhorn7.16.18$Name <- "Buckhorn State Park, WI"
-buckhorn7.16.18
+buckhorn7.23.18 <- search_tweets(q = "Buckhorn", n = 18000, include_rts = F, geocode = "43.934230,-89.995221,3mi")
+ts_plot(buckhorn7.23.18)
+buckhorn7.23.18$Name <- "Buckhorn State Park, WI"
+buckhorn7.23.18
+
 ##save(buckhorn7.16.18, file = "buckhorn7.16.18.rda")
+##save(buckhorn7.23.18, file = "buckhorn7.23.18.rda")
 ```
 
 Perrot State Park
 
 ```{r}
-perrot7.16.18 <- search_tweets(q = "Perrot", n = 18000, include_rts = F, geocode = "44.024749,-91.490942,4.5mi")
-ts_plot(perrot7.16.18)
-perrot7.16.18 ##no tweets for this time period
+perrot7.23.18 <- search_tweets(q = "Perrot", n = 18000, include_rts = F, geocode = "44.024749,-91.490942,4.5mi")
+ts_plot(perrot7.23.18)
+perrot7.23.18 ##no tweets for this time period
 ```
 
 Combine all of the twitter data sets that we have for the state parks
@@ -339,5 +349,14 @@ twitter7.16.18Unique%>%group_by(Name)%>%summarise(MeanDistance = mean(DistanceDr
                                                   MedianDistance = median(DistanceDriven, na.rm = T),
                                                   MeanLengthTrip = mean(LengthTrip, na.rm = T),
                                                   MedianLengthTrip = median(LengthTrip, na.rm = T))
+```
+
+Combine to get sentiment analysis done
+===
+
+```{r}
+twitter7.23.18 <- rbind(mendota7.16.18, mendota7.23.18, crater7.16.18, crater7.23.18, devils7.16.18, devils7.23.18, mirror7.16.18, mirror7.23.18, peninsula7.16.18, peninsula7.23.18, buckhorn7.16.18, buckhorn7.23.18)
+dim(twitter7.23.18)
+##save(twitter7.23.18, file = "twitter7.23.18.rda")
 ```
 
