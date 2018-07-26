@@ -23,6 +23,7 @@ library(gmapsdistance)
 library(forecast)
 library(reshape2)
 library(car)
+library(lubridate)
 ##social media
 library(rtweet)
 library(httr)
@@ -359,4 +360,6 @@ twitter7.23.18 <- rbind(mendota7.16.18, mendota7.23.18, crater7.16.18, crater7.2
 dim(twitter7.23.18)
 ##save(twitter7.23.18, file = "twitter7.23.18.rda")
 ```
+
+
 
