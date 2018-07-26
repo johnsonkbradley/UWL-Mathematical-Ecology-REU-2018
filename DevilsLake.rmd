@@ -315,7 +315,9 @@ dim(stateFiltered)
 
 ggplot(data = stateFiltered, aes(x = Name, y = DistanceDriven)) +
   geom_boxplot(fill = "grey") +
-  theme_bw()
+  theme_bw() +
+  xlab("Park Name") +
+  ylab("Distance Driven (miles)")
 
 ```
 
@@ -559,3 +561,38 @@ ggplot(data = devilsTweetsUnique, aes(x = DistanceDriven, y = Sentiment)) + geom
 ```
 
 
+Re-look into this
+===
+
+```{r}
+load("devils7.16.18.sentiment2.rda")
+devils7.16.18_sentiment_sen
+
+devils7.16.18sentiment2 <- devils7.16.18_sentiment_sen%>%group_by(element_id)%>%summarise(Sentiment = sum(sentiment))
+devils7.16.18sentiment2
+devils7.16.18b <- devils7.16.18[-13,]
+devils7.16.18b <- cbind(devils7.16.18b, devils7.16.18sentiment2)
+devils7.16.18b
+
+devilsTweetsDist2 <- devils7.16.18b%>%left_join(twitter7.16.18Unique)
+devilsTweetsDist2
+devilsTweetsDist2[unique(devilsTweetsDist2$text),]
+
+devilsTweetsUnique2 <- unique(devilsTweetsDist2%>%select(text, Sentiment, DistanceDriven, created_at))
+devilsTweetsUnique2
+
+##plots
+##eventually will want to seperate it out this way probably, or even could do months once we get the data
+ggplot(data = devilsTweetsUnique2, aes(x = as.factor(floor_date(created_at, unit = "1 week")), y = Sentiment)) +
+  geom_boxplot()
+
+ggplot(data = devilsTweetsUnique2, aes(y = Sentiment)) +
+  geom_boxplot(fill = "grey") +
+  theme_bw() +
+  geom_hline(yintercept = 0, col = "red", lty = 2, size = 2) +
+  theme(axis.text.x=element_blank(), axis.title.y = element_text(size = 14)) +
+  ylab(expression("Negative " %<-% " Sentiment " %->% " Positive")) +
+  ggtitle("Devil's Lake Sentiments July 6, 2018 - July 16, 2018")
+```
+
+This sentiment seems almost the same as the other one, but seems to be better/more accurate.
