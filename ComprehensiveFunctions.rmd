@@ -362,4 +362,86 @@ dim(twitter7.23.18)
 ```
 
 
+Look at the sentiments for these
+===
+
+```{r}
+load("twitter7.23.18.sentiment.rda")
+load("twitter7.23.18.no.ads.rda")
+twitter7.23.18_sentiment_sen
+twitter7.23.18_non_ad
+
+twitterFiltered <- twitter7.23.18[-c(2,5,6,22,26,27,28,29,30,31,32,33,34,35,49,50,70,79,88,89,90,91,92,93,94,95,96,109,125,127,128,131,132,138,139,149,150),]
+
+twitterSentiment <- twitter7.23.18_sentiment_sen%>%group_by(element_id)%>%summarise(Sentiment = sum(sentiment))
+twitterSentiment
+
+twitter <- cbind(twitterFiltered, twitterSentiment)
+twitter2 <- TwitterDistance(twitter)
+twitter2
+
+ggplot(data = twitter2, aes(x = as.factor(floor_date(created_at, unit = "1 week")), y = Sentiment)) +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14), plot.title = element_text(size = 16)) +
+  geom_boxplot(fill = "grey") +
+  facet_wrap(~Name) +
+  geom_hline(yintercept = 0, col = "red", lty = 2) +
+  ggtitle("Tweets Sentiments per Week") +
+  xlab("Week") +
+  ylab("Sentiment Score")
+
+##can zoom in just on Devil's Laeks graph, or do a percentage of tweets that are positive/negative/neutral for each week?
+```
+
+Distance
+
+```{r}
+ggplot(twitter2, aes(x = DistanceDriven, y = Sentiment)) +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14), plot.title = element_text(size = 16)) +
+  geom_point(size = 5) +
+  geom_hline(yintercept = 0, col = "red", lty = 2, size = 2) +
+  ylab(expression("Negative " %<-% " Sentiment " %->% " Positive")) +
+  xlab("Distance Driven") +
+  ggtitle("Sentiment vs Distance Driven to Wisconsin State Parks")
+```
+
+Zoom in on weeks
+===
+
+```{r}
+devilsTwitter <- twitter2 %>%
+                  filter(Name == "Devil's Lake, WI") %>%
+                  mutate(Week = as.factor(floor_date(created_at, unit = "1 week")))
+devilsTwitter$SentimentName <- ifelse(devilsTwitter$Sentiment > 0, "Positive",
+                                      ifelse(devilsTwitter$Sentiment < 0, "Negative", "Neutral"))
+devilsTwitterSimple <- devilsTwitter %>%
+                  count(Week, SentimentName) %>%
+                  rename(NumberTweets = n)  %>%
+                  mutate(TotalTweets = c(2,17,17,17,6,6,6,4,4,4), Percent = NumberTweets / TotalTweets)
+                  
+ggplot(data = devilsTwitterSimple, aes(x = Week, y = Percent, group = SentimentName, col = SentimentName)) +
+  geom_point(size = 5, shape = 15)
+
+##reformat to long version
+devilsTwitterLong <- melt(devilsTwitterSimple) %>% filter(variable == "Percent")
+
+devilsTwitterLong <- rbind(devilsTwitterLong, data.frame(Week = c("2018-07-01", "2018-07-01"), SentimentName = c("Negative", "Neutral"), variable = rep("Percent", 2), value = rep(0, 2)))
+
+devilsTwitterLong$SentimentName <- as.factor(devilsTwitterLong$SentimentName)
+devilsTwitterLong$SentimentName <- ordered(devilsTwitterLong$SentimentName, levels = c("Positive", "Neutral", "Negative"))
+
+ggplot(data = devilsTwitterLong, aes(x = Week, y = value, fill = SentimentName)) +
+  geom_bar(stat = "identity", position = "dodge", col = "black") +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14), plot.title = element_text(size = 16)) +
+  scale_fill_manual(values = c("green3", "darkgrey", "red"), name = "Sentiment") +
+  xlab("Week") +
+  ylab("Percent of Tweets") +
+  ggtitle("Devil's Lake Visitors' Sentiment")
+
+
+##eventually want to get the weather along with that to see if that has any effect
+```
+
 
