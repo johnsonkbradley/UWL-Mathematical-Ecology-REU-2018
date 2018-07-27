@@ -523,7 +523,7 @@ devils$Itch <- ifelse(devils$Year %in% c("2014", "2016", "2017", "2018"), T, F)
 anova(aov(Count ~ Itch, data = devils)) ##shows no difference in whether swimmer's itch occured that summer Itch
 ```
 
-Devil's Lake Sentimen
+Devil's Lake Sentiment
 ===
 
 ```{r}
@@ -583,8 +583,7 @@ devilsTweetsUnique2
 
 ##plots
 ##eventually will want to seperate it out this way probably, or even could do months once we get the data
-ggplot(data = devilsTweetsUnique2, aes(x = as.factor(floor_date(created_at, unit = "1 week")), y = Sentiment)) +
-  geom_boxplot()
+ggplot(data = devilsTweetsUnique2, aes(x = as.factor(floor_date(created_at, unit = "1 week")), y = Sentiment)) + geom_boxplot()
 
 ggplot(data = devilsTweetsUnique2, aes(y = Sentiment)) +
   geom_boxplot(fill = "grey") +
