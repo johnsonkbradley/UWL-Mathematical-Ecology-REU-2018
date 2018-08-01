@@ -203,7 +203,7 @@ Wisconsin State Parks Flickr vs Actual visitors
 stateParks <- rbind(devilsMonth2, dodgeMonth, kegonsaMonth, yellowstoneMonth, bigfootMonth, mirrorMonth, penninsulaMonth, pattisonMonth, buckhornMonth, perrotMonth)
 
 ##graph
-ggplot(data = stateParks, aes(x = log(Count), y = log(Visitors))) +
+ggplot(data = stateParks, aes(x = log(Count + 1), y = log(Visitors))) +
   geom_point(size = 2) +
   geom_smooth(method = "lm", se = F, col = "red", size = 2) +
   theme_bw(base_size = 14) +
@@ -223,7 +223,7 @@ summary(stateMod)
 stateModDist <- lm(log(Count + 1) ~ log(Visitors) * Dist, data = stateParks)
 summary(stateModDist)
 
-summary(lm(Visitors ~ Count, data = stateParks)) ## 1 Flickr =about 18,000 actual visitors (for these 10 together)
+summary(lm(log(Visitors) ~ log(Count + 1), data = stateParks)) ## 1 Flickr =about 18,000 actual visitors (for these 10 together)
 ```
 
 Merging all of the raw flickr5 data together to get the home location of the photo poster
