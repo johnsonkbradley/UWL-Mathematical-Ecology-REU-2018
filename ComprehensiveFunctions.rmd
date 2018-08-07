@@ -215,123 +215,132 @@ Other Flickr function ideas
 Lake Mendota
 
 ```{r}
-mendota7.30.18 <- search_tweets(q = "Lake Mendota", n = 18000, include_rts = F, geocode = "43.104395,-89.415459,5mi")
-ts_plot(mendota7.30.18)
-mendota7.30.18$Name <- "Lake Mendota, WI"
+mendota8.6.18 <- search_tweets(q = "Lake Mendota", n = 18000, include_rts = F, geocode = "43.104395,-89.415459,5mi")
+ts_plot(mendota8.6.18)
+mendota8.6.18$Name <- "Lake Mendota, WI"
 
 ##save(mendota7.16.18, file = "mendota7.16.18.rda")
 ##save(mendota7.23.18, file = "mendota7.23.18.rda")
 ##save(mendota7.30.18, file = "mendota7.30.18.rda")
+##save(mendota8.6.18, file = "mendota8.6.18.rda")
 ```
 
 Crater Lake
 
 ```{r}
-crater7.30.18 <- search_tweets(q = "Crater Lake", n = 18000, include_rts = F, geocode = "42.945247,-122.108234,10mi")
-ts_plot(crater7.30.18)
-crater7.30.18$Name <- "Crater Lake, OR"
+crater8.6.18 <- search_tweets(q = "Crater Lake", n = 18000, include_rts = F, geocode = "42.945247,-122.108234,10mi")
+ts_plot(crater8.6.18)
+crater8.6.18$Name <- "Crater Lake, OR"
 
 ##save(crater7.16.18, file = "crater7.16.18.rda")
 ##save(crater7.23.18, file = "crater7.23.18.rda")
 ##save(crater7.30.18, file = "crater7.30.18.rda")
+##save(crater8.6.18, file = "crater8.6.18.rda")
 ```
 
 Devil's Lake State Park
 
 ```{r}
-devils7.30.18 <- search_tweets(q = "Devil's Lake", n = 18000, include_rts = F, geocode = "43.415606,-89.730330,2mi")
-ts_plot(devils7.30.18)
-devils7.30.18$Name <- "Devil's Lake, WI"
+devils8.6.18 <- search_tweets(q = "Devil's Lake", n = 18000, include_rts = F, geocode = "43.415606,-89.730330,2mi")
+ts_plot(devils8.6.18)
+devils8.6.18$Name <- "Devil's Lake, WI"
 
 ##save(devils7.16.18, file = "devils7.16.18.rda")
 ##save(devils7.23.18, file = "devils7.23.18.rda")
 ##save(devils7.30.18, file = "devils7.30.18.rda")
+##save(devils8.6.18, file = "devils8.6.18.rda")
 ```
 
 Governer Dodge State Park
 
 ```{r}
-dodge7.30.18 <- search_tweets(q = "Governer Dodge", n = 18000, include_rts = F, geocode = "43.025734,-90.103683,2.5mi")
-ts_plot(dodge7.30.18)
-dodge7.30.18 ##no tweets for this time period
+dodge8.6.18 <- search_tweets(q = "Governer Dodge", n = 18000, include_rts = F, geocode = "43.025734,-90.103683,2.5mi")
+ts_plot(dodge8.6.18)
+dodge8.6.18 ##no tweets for this time period
 ```
 
 Lake Kegonsa State Park
 
 ```{r}
-kegonsa7.30.18 <- search_tweets(q = "Lake Kegonsa", n = 18000, include_rts = F, geocode = "42.968061,-89.244261,2mi")
-ts_plot(kegonsa7.30.18)
-kegonsa7.30.18$Name <- "Lake Kegonsa State Park, WI"
+kegonsa8.6.18 <- search_tweets(q = "Lake Kegonsa", n = 18000, include_rts = F, geocode = "42.968061,-89.244261,2mi")
+ts_plot(kegonsa8.6.18)
+kegonsa8.6.18$Name <- "Lake Kegonsa State Park, WI"
 
 ##save(kegonsa7.30.18, file = "kegonsa7.30.18.rda")
+##save(kegonsa8.6.18, file = "kegonsa8.6.18.rda")
 ```
 
 Yellowstone Lake State Park
 
 ```{r}
-yellowstone7.30.18 <- search_tweets(q = "Yellowstone Lake", n = 18000, include_rts = F, geocode = "42.769699,-89.997597,2.5mi")
-ts_plot(yellowstone7.30.18)
-yellowstone7.30.18 ##no tweets for this time period
+yellowstone8.6.18 <- search_tweets(q = "Yellowstone Lake", n = 18000, include_rts = F, geocode = "42.769699,-89.997597,2.5mi")
+ts_plot(yellowstone8.6.18)
+yellowstone8.6.18$Name <- "Yellowstone Lake State Park, WI"
+
+##save(yellowstone8.6.18, file = "yellowstone8.6.18.rda")
 ```
 
 Big Foot Beach State Park
 
 ```{r}
-bigfoot7.30.18 <- search_tweets(q = "Big Foot", n = 18000, include_rts = F, geocode = "42.568885,-88.432732,1mi")
-ts_plot(bigfoot7.30.18)
-bigfoot7.30.18 ##no tweets for this time period
+bigfoot8.6.18 <- search_tweets(q = "Big Foot", n = 18000, include_rts = F, geocode = "42.568885,-88.432732,1mi")
+ts_plot(bigfoot8.6.18)
+bigfoot8.6.18 ##no tweets for this time period
 ```
 
 Mirror Lake State Park
 
 ```{r}
-mirror7.30.18 <- search_tweets(q = "Mirror Lake", n = 18000, include_rts = F, geocode = "43.566732,-89.816150,1.5mi")
-ts_plot(mirror7.30.18)
-mirror7.30.18$Name <- "Mirror Lake State Park, WI"
+mirror8.6.18 <- search_tweets(q = "Mirror Lake", n = 18000, include_rts = F, geocode = "43.566732,-89.816150,1.5mi")
+ts_plot(mirror8.6.18)
+mirror8.6.18$Name <- "Mirror Lake State Park, WI"
 
 ##save(mirror7.16.18, file = "mirror7.16.18.rda")
 ##save(mirror7.23.18, file = "mirror7.23.18.rda")
 ##save(mirror7.30.18, file = "mirror7.30.18.rda")
+##save(mirror8.6.18, file = "mirror8.6.18.rda")
 ```
 
 Peninsula State Park
 
 ```{r}
-peninsula7.30.18 <- search_tweets(q = "Peninsula", n = 18000, include_rts = F, geocode = "45.148148,-87.219086,2.5mi")
-ts_plot(peninsula7.30.18)
-peninsula7.30.18$Name <- "Peninsula State Park, WI"
+peninsula8.6.18 <- search_tweets(q = "Peninsula", n = 18000, include_rts = F, geocode = "45.148148,-87.219086,2.5mi")
+ts_plot(peninsula8.6.18)
+peninsula8.6.18$Name <- "Peninsula State Park, WI"
 
 ##save(peninsula7.16.18, file = "peninsula7.16.18.rda")
 ##save(peninsula7.23.18, file = "peninsula7.23.18.rda")
 ##save(peninsula7.30.18, file = "peninsula7.30.18.rda")
+##save(peninsula8.6.18, file = "peninsula8.6.18.rda")
 ```
 
 Pattison State Park
 
 ```{r}
-pattison7.30.18 <- search_tweets(q = "Pattison", n = 18000, include_rts = F, geocode = "46.529343,-92.120018,2mi")
-ts_plot(pattison7.30.18)
-pattison7.30.18 ##no tweets for this time period
+pattison8.6.18 <- search_tweets(q = "Pattison", n = 18000, include_rts = F, geocode = "46.529343,-92.120018,2mi")
+ts_plot(pattison8.6.18)
+pattison8.6.18 ##no tweets for this time period
 ```
 
 Buckhorn State Park
 
 ```{r}
-buckhorn7.30.18 <- search_tweets(q = "Buckhorn", n = 18000, include_rts = F, geocode = "43.934230,-89.995221,3mi")
-ts_plot(buckhorn7.30.18)
-buckhorn7.30.18$Name <- "Buckhorn State Park, WI"
+buckhorn8.6.18 <- search_tweets(q = "Buckhorn", n = 18000, include_rts = F, geocode = "43.934230,-89.995221,3mi")
+ts_plot(buckhorn8.6.18)
+buckhorn8.6.18$Name <- "Buckhorn State Park, WI"
 
 ##save(buckhorn7.16.18, file = "buckhorn7.16.18.rda")
 ##save(buckhorn7.23.18, file = "buckhorn7.23.18.rda")
 ##save(buckhorn7.30.18, file = "buckhorn7.30.18.rda")
+##save(buckhorn8.6.18, file = "buckhorn8.6.18.rda")
 ```
 
 Perrot State Park
 
 ```{r}
-perrot7.30.18 <- search_tweets(q = "Perrot", n = 18000, include_rts = F, geocode = "44.024749,-91.490942,4.5mi")
-ts_plot(perrot7.30.18)
-perrot7.30.18 ##no tweets for this time period
+perrot8.6.18 <- search_tweets(q = "Perrot", n = 18000, include_rts = F, geocode = "44.024749,-91.490942,4.5mi")
+ts_plot(perrot8.6.18)
+perrot8.6.18 ##no tweets for this time period
 ```
 
 Combine all of the twitter data sets that we have for the state parks
@@ -366,6 +375,9 @@ dim(twitter7.23.18)
 
 twitter7.30.18 <- rbind(mendota7.30.18, crater7.30.18, devils7.30.18, kegonsa7.30.18, mirror7.30.18, peninsula7.30.18, buckhorn7.30.18)
 ##save(twitter7.30.18, file = "twitter7.30.18.rda")
+
+twitter8.6.18 <- rbind(mendota8.6.18, crater8.6.18, devils8.6.18, kegonsa8.6.18, yellowstone8.6.18, mirror8.6.18, peninsula8.6.18, buckhorn8.6.18)
+##save(twitter8.6.18, file = "twitter8.6.18.rda") have not been sentiment analysis'ed
 ```
 
 
@@ -417,16 +429,30 @@ twitterSentiment2
 twitter30 <- cbind(twitter30filtered, twitterSentiment2)
 twitter30.a <- TwitterDistance(twitter30)
 
-##combining the two twitter data sets and filter unique
-twitter30full <- rbind(twitter2, twitter30.a)
-unique(twitter30full) ##same length so we're good
+###
+load("twitter8.6.18.sentiment.rda")
+load("twitter8.6.18.no.ads.rda")
+twitter8.6.18_sentiment_sen
+twitter8.6.18_non_ad
+
+
+twitter6filtered <- twitter8.6.18[-c(7,8,9,11,25,27,29,40,47,66,76,77),]
+
+twitterSentiment3 <- twitter8.6.18_sentiment_sen%>%group_by(element_id)%>%summarise(Sentiment = sum(sentiment))
+
+twitter6 <- cbind(twitter6filtered, twitterSentiment3)
+twitter6.a <- TwitterDistance(twitter6)
+
+##combining the twitter data sets and filter unique
+twitter6full <- rbind(twitter2, twitter30.a, twitter6.a)
+twitter6full <- unique(twitter30full)
 ```
 
 
 ## Distance
 
 ```{r}
-ggplot(twitter30full, aes(x = DistanceDriven, y = Sentiment)) +
+ggplot(twitter6full, aes(x = DistanceDriven, y = Sentiment)) +
   theme_bw() +
   theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3))) +
   geom_point(size = 5) +
@@ -440,7 +466,7 @@ Zoom in on weeks
 ===
 
 ```{r}
-devilsTwitter <- twitter30full %>%
+devilsTwitter <- twitter6full %>%
                   filter(Name == "Devil's Lake, WI") %>%
                   mutate(Week = as.factor(floor_date(created_at, unit = "1 week")))
 devilsTwitter$SentimentName <- ifelse(devilsTwitter$Sentiment > 0, "Positive",
@@ -448,7 +474,7 @@ devilsTwitter$SentimentName <- ifelse(devilsTwitter$Sentiment > 0, "Positive",
 devilsTwitterSimple <- devilsTwitter %>%
                   count(Week, SentimentName) %>%
                   rename(NumberTweets = n) %>%
-                  mutate(TotalTweets = c(2,17,17,17,6,6,6,13,13,13,8,8,8), Percent = NumberTweets / TotalTweets)
+                  mutate(TotalTweets = c(2,17,17,17,8,8,8,13,13,13,24,24,24,2,2), Percent = NumberTweets / TotalTweets)
                   
 ggplot(data = devilsTwitterSimple, aes(x = Week, y = Percent, group = SentimentName, col = SentimentName)) +
   geom_point(size = 5, shape = 15)
@@ -463,7 +489,7 @@ devilsTwitterLong$SentimentName <- ordered(devilsTwitterLong$SentimentName, leve
 
 
 ##plot
-ggplot(data = devilsTwitterLong%>%filter(!(Week == "2018-07-01")), aes(x = Week, y = value, fill = SentimentName)) +
+ggplot(data = devilsTwitterLong%>%filter(!(Week == "2018-07-01") & !(Week == "2018-08-05")), aes(x = Week, y = value, fill = SentimentName)) +
   geom_bar(stat = "identity", position = "dodge", col = "black") +
   theme_bw() +
   theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), legend.key.size = unit(1.5, "cm"), legend.title = element_text(size = rel(2)), legend.text = element_text(size = rel(2)), axis.text.x = element_text(size = rel(2)), axis.text.y = element_text(size = rel(2))) +
