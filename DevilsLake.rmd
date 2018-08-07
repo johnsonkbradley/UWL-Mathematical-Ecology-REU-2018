@@ -480,7 +480,7 @@ Devil's Lake Weather Graphs for Poster
 ===
 
 ```{r}
-devilsMelt <- melt(parksFacts%>%filter(Name == "Devil's Lake, WI", Date < "2016-07")%>%select(Date, Count, DX70))
+devilsMelt <- melt(parksFacts%>%filter(Name == "Devil's Lake, WI", Date < "2016-07")%>%select(Date, Count, DX70, DX90))
 devilsMelt
 
 ggplot(data = devilsMelt, aes(x = Date, y = value, group = variable, col = variable)) +
@@ -488,7 +488,7 @@ ggplot(data = devilsMelt, aes(x = Date, y = value, group = variable, col = varia
   theme_bw() +
   theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), axis.text.x = element_text(size = rel(2)), legend.text = element_text(size = rel(2)), axis.text.y = element_text(size = rel(2))) +
   scale_x_discrete(labels = c(rep(c("Jan", "", "", "", "", "", "Jul", "", "", "", "", ""), 5), "Jan", "", "", "", "", "")) +
-  scale_color_manual(values = c("black", "red"), name = "", labels = c("Flickr Visitor Count", expression("Days Above 70" ~degree~ "F"))) +
+  scale_color_manual(values = c("black", "red", "orange"), name = "", labels = c("Flickr Visitor Count", expression("Days Above 70" ~degree~ "F"), expression("Days Above 90" ~degree~ "F"))) +
   xlab("Month") +
   ylab("Count") +
   ggtitle("Devil's Lake Visitor Count and Temperature")
