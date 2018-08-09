@@ -224,6 +224,9 @@ stateModDist <- lm(log(Count + 1) ~ log(Visitors) * Dist, data = stateParks)
 summary(stateModDist)
 
 summary(lm(log(Visitors) ~ log(Count + 1), data = stateParks)) ## 1 Flickr =about 18,000 actual visitors (for these 10 together)
+
+##ANOVA FOR PARKS
+TukeyHSD(aov(Count ~ Name, data = stateParks))
 ```
 
 Merging all of the raw flickr5 data together to get the home location of the photo poster
@@ -408,7 +411,7 @@ ggmap(wisconsin) +
   geom_point(data = latLong, aes(x = Long, y = Lat, size = MedianDistance, fill = (NumberUniqueVisitors / NumberOfVisits)), col = "black", shape = 21) +
   theme_bw() +
   theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), legend.title = element_text(size = rel(2)), legend.text = element_text(size = rel(1))) +
-  scale_size_continuous(range = c(3, 12), name = "Median Distance") +
+  scale_size_continuous(range = c(3, 12), name = "Median Distance (miles)") +
   scale_fill_gradient(name = "Percent of Unique Visitors", low = "cyan", high = "darkblue") +
   xlim(limits = c(-93, -86)) +
   ylim(limits = c(42, 47)) +
