@@ -452,13 +452,13 @@ twitter6full <- unique(twitter30full)
 ## Distance
 
 ```{r}
-ggplot(twitter6full, aes(x = DistanceDriven, y = Sentiment)) +
+ggplot(twitter6full%>%filter(!(Name %in% c("Lake Mendota, WI", "Crater Lake, OR"))), aes(x = DistanceDriven, y = Sentiment)) +
   theme_bw() +
   theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3))) +
   geom_point(size = 5) +
   geom_hline(yintercept = 0, col = "red", lty = 2, size = 2) +
   ylab(expression("Negative " %<-% " Sentiment " %->% " Positive")) +
-  xlab("Distance Driven") +
+  xlab("Distance Driven (miles)") +
   ggtitle("Sentiment vs Distance Driven to Wisconsin State Parks")
 ```
 
