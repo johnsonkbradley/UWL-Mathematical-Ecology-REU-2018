@@ -458,12 +458,12 @@ parksFacts%>%filter(Name == "Devil's Lake, WI")
 ## Plot some interesting variables
 
 ```{r}
-ggplot(data = parksFacts%>%filter(Name %in% c("Devil's Lake, WI", "Penninsula State Park, WI", "Perrot State Park, WI", "Mirror Lake State Park, WI")), aes(x = Date)) +
+ggplot(data = parksFacts, aes(x = Date)) +
   theme_bw() +
-  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), axis.text.x = element_text(size = rel(2)), axis.text.y = element_text(size = rel(2)), strip.text = element_text(size = rel(2))) +
-  facet_wrap(~Name) +
+  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), axis.text.x = element_text(size = rel(1.5)), axis.text.y = element_text(size = rel(2)), strip.text = element_text(size = rel(1.5))) +
+  facet_wrap(~Name, nrow = 2) +
   geom_line(aes(y = Count, group = Group), col = "black", size = 2) +
-  scale_x_discrete(labels = c(rep(c("Jan", "", "", "", "", "", "Jul", "", "", "", "", ""), 5), "Jan", "", "", "", "", "")) +
+  scale_x_discrete(labels = c(rep(c("Jan", "", "", "", "", "", "", "", "", "", "", ""), 5), "Jan", "", "", "", "", "")) +
   xlab("Month") +
   ylab("Number of Flickr Visitors") +
   ggtitle("Number of Flickr Visitors per Month")
