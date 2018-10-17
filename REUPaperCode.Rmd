@@ -1,0 +1,518 @@
+---
+title: "Using Social Media to Aid in Park Management"
+output: html_notebook
+---
+
+Packages Needed
+===
+
+```{r}
+##general
+library(dplyr)
+library(ggplot2)
+library(ggmap)
+library(car)
+library(GGally)
+library(lubridate)
+library(cluster)
+library(factoextra)
+library(rgdal)
+library(sf)
+library(pscl)
+library(gmapsdistance)
+library(forecast)
+library(reshape2)
+library(car)
+library(lubridate)
+##social media
+library(rtweet)
+library(httr)
+library(jsonlite)
+```
+
+Getting the Flickr Data
+===
+
+## Data usefull for pulling posts from FLickr
+
+This `BBOX` data frame is a data frame with the park name, and the corresponsing latitude and longitude bounding box that includes the entirety of the park. This bbox is used when searching for Flickr posts through the Flickr API.
+
+```{r}
+BBOX <- data.frame(Park = c("Devil's Lake", "Governor Dodge", "Lake Kegonsa", "Yellowstone Lake", "Big Foot Beach", "Mirror Lake", "Peninsula", "Pattison", "Buckhorn", "Perrot"),
+                   bbox = c("-89.772087,43.384152,-89.682693,43.43512", "-90.134575,42.994764,-90.077606,43.055694", "-89.282692,42.946872,-89.220319,42.98512", "-90.043154,42.747275,-89.950532,42.788051", "-88.46464,42.565459,-88.412035,42.573933", "-89.846896,43.548288,-89.790738,43.580801", "-87.249334,45.121876,-87.177923,45.175806", "-92.145025,46.515907,-92.091446,46.555321", "-90.066141,43.861635,-89.91464,43.991167", "-91.57958,44.007819,-91.424588,44.072136"))
+```
+
+
+## Accessing data from the Flickr API
+
+These functions are used to access data that we want from the Flickr API.
+
+```{r}
+## This function will get photos from a certain area defined in a bounding box, starting at a certain date, and match a search query (ie the park name)
+## Inputs: Search query, Start Date, Bounding Box
+## Outputs: A data frame of Flickr posts
+GetPhotosBBox <- function(query, startDate, bbox) {
+  query <- gsub(" ", "+", query)
+  startDate <- gsub("/", "%2F", startDate)
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=",keys$key,"&text=",query,"&min_taken_date=",startDate,"&bbox=",bbox,"&sort=date-taken-asc&content_type=1&per_page=500&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  photos <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  photosDF <- photos$'photos'$photo
+  return(photosDF)
+}
+
+## This function will return the date that a flickr photo was taken, given the id number of the picture
+## Inputs: the id number of the picture you want to know the date taken
+## Outputs: the date taken
+GetDate <- function(id) {
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.photos.getInfo&api_key=",keys$key,"&photo_id=",id,"&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  info <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  date <- info$`photo`$dates$taken
+  return(date)
+}
+
+## This function will return the home location listed by each flickr user
+## Inputs: user id
+## Outputs: home location for the poster of the photo
+GetHomeLocation <- function(user) {
+  url <- paste("https://api.flickr.com/services/rest/?method=flickr.people.getInfo&api_key=",keys$key,"&user_id=",user,"&format=json&nojsoncallback=1&api_sig=",keys$secret, sep = "")
+  info <- GET(url = url)%>%content(as = "text")%>%fromJSON()
+  location <- info$`person`$location$`_content`
+  return(location)
+}
+```
+
+## Other useful functions for the Flickr data
+
+These functions below are used to obtain more data about the parks once the data is pulled from the Flickr API. This includes visitors per month, distance traveled, and days since a visitor's last visit to the park.
+
+```{r}
+## This function will take the raw flickr posts data and will return a data frame containing the number of visitors per month
+## Inputs: raw flickr data for the past 5 years
+## Outputs: summary of the number of visitors per month
+GetVPM <- function(dataFlickr5) {
+  dataFlickr5$Year <- substr(dataFlickr5$DateTaken, 1, 4)
+  dataFlickr5$Month <- substr(dataFlickr5$DateTaken, 6, 7)
+  dataFlickr5$Day <- substr(dataFlickr5$DateTaken, 9, 10)
+
+  dataUnique <- dataFlickr5%>%group_by(owner, Year, Month, Day)%>%summarise(Count = n())
+
+  dataMonth <- dataUnique%>%group_by(Year, Month)%>%summarise(Count = n())
+  dataMonth$Date <- paste(dataMonth$Year, dataMonth$Month, sep = "-")
+  dataMonth$Group <- 1
+  
+  dataMonth2 <- DATES%>%left_join(dataMonth[,-c(1,2)], by = "Date")
+  dataMonth2$Count[is.na(dataMonth2$Count)] <- 0
+  dataMonth2$Group <- 1
+  
+  return(dataMonth2)
+}
+
+## This function will get the distances between the user specified home location, and the park that they visited
+## Inputs: A flickr data frame
+## Outputs: flick data frame
+FlickrDistance <- function(data) {
+  data$DistanceDriven <- NA
+  data$Name2 <- gsub(pattern = replacePattern, replacement = "+", x = data$Name)
+  data$Location2 <- gsub(pattern = replacePattern, replacement = "+", x = data$Location)
+  
+  for (i in 1:nrow(data)) {
+    if (nchar(data$Location2[i]) > 1) {
+      data$DistanceDriven[i] <- gmapsdistance(origin = data$Location2[i], destination = data$Name2[i], mode = "driving")$Distance / 1609
+    }
+  }
+  return(data)
+}
+
+## This function will compute the days since a visitor's last visit to a park
+## Inputs: flickr data frame
+## Outputs: flickr data frame
+FlickrComputeDaysSince <- function(data) {
+  data$Date <- paste(data$Day, data$Month, data$Year, sep = ".")
+
+  data <- data%>%arrange(Name, owner, Year, Month, Day)
+
+  ##actually computing days since
+  data$DaysSince <- NA
+  for (i in 2:nrow(data)) {
+    if((data$owner[i] == data$owner[i-1]) & (data$Name[i] == data$Name[i-1])) {
+      data$DaysSince[i] <- difftime(strptime(data$Date[i], format = "%d.%m.%Y"),
+                                           strptime(data$Date[i-1], format = "%d.%m.%Y"), units = "days")
+    }
+  }
+  return(data)
+}
+```
+
+## Example
+
+This is an example from Buckhorn State Park, WI that shows how we obtain the Flickr data and format it into data that we can work with and is usefull. This will work for any of the parks that we investigated, as well as any other parks or attractions.
+
+```{r}
+## Get the data
+buckhornFlickr5 <- GetPhotosBBox(query = "", startDate = "1/1/2013", bbox = "-90.066141,43.861635,-89.91464,43.991167")
+buckhornFlickr5$DateTaken <- sapply(buckhornFlickr5$id, GetDate)
+buckhornFlickr5$Name <- "Buckhorn State Park, WI"
+
+## Visitors per month
+buckhornMonth <- GetVPM(buckhornFlickr5)
+buckhornMonth$Name <- "Buckhorn State Park, WI"
+
+## Read in actual visitor data
+buckhornVisitors <- read.csv("buckhornVisitors.csv", header = T)
+buckhornVisitors$Month <- as.character(buckhornVisitors$Month)
+buckhornVisitors$Year <- as.character(buckhornVisitors$Year)
+
+## formating actual visitor data
+for (i in 1:nrow(buckhornVisitors)) {
+  if (nchar(buckhornVisitors$Month[i]) == 1) {
+    buckhornVisitors$Month[i] <- paste("0", buckhornVisitors$Month[i], sep = "")
+  }
+}
+
+## Complete visitors per month data set
+buckhornMonth <- buckhornMonth%>%left_join(buckhornVisitors, by = c("Year", "Month"))
+```
+
+
+Getting the Twitter data
+===
+
+## Data usefull for pulling tweets from Twitter
+
+This `QueryGeocode` data frame is a data frame that includes the park name, the search query needed for accessing tweets from the Twitter API, and a geocode radius than encompasses the entire park, which also is needed to access tweets from the Twitter API.
+
+```{r}
+##make a data set of the query and geocode for each park
+QueryGeocode <- data.frame(Park = c("Devil's Lake", "Governor Dodge", "Lake Kegonsa", "Yellowstone Lake", "Big Foot Beach", "Mirror Lake", "Peninsula", "Pattison", "Buckhorn", "Perrot"),
+                           query = c("Devil's Lake", "Governer Dodge", "Lake Kegonsa", "Yellowstone Lake", "Big Foot", "Mirror Lake", "Peninsula", "Pattison", "Buckhorn", "Perrot"),
+                           geocode = c("43.415606,-89.730330,2mi", "43.025734,-90.103683,2.5mi", "42.968061,-89.244261,2mi", "42.769699,-89.997597,2.5mi", "42.568885,-88.432732,1mi", "43.566732,-89.816150,1.5mi", "45.148148,-87.219086,2.5mi", "46.529343,-92.120018,2mi", "43.934230,-89.995221,3mi", "44.024749,-91.490942,4.5mi"))
+QueryGeocode
+```
+
+## Pulling tweets from Twitter
+
+These functions will pull tweets from the Twitter API for the park that you want to investigate, as well as attatch the park name as a column so we can compute distance traveled in later steps.
+
+```{r}
+## This function will get the tweets for a park
+## Inputs: variable name, search query, and a geocode of the bounding circle, all as strings (in quotes)
+## Outputs: will make a list of the variable name you entered that includes the data from the Twitter API
+GetTweets <- function(variableName, query, geocode) {
+  assign(variableName, search_tweets(q = query, n = 18000, include_rts = F, geocode = geocode), envir = .GlobalEnv)
+}
+
+## Example
+GetTweets("perrotExample", "Perrot", "44.024749,-91.490942,4.5mi") ##gotta do variable name in quotes
+
+## This function will attach the park name to the data
+## Inputs: Data variable name, park name (as a string)
+## Outputs: Twitter Data with a park name column
+AttachParkName <- function(dataFrame, parkName) {
+  dataFrame$Name <- parkName
+  return(dataFrame)
+}
+
+##Example
+perrotExample <- AttachParkName(perrotExample, "Perrot State Park, WI")
+```
+
+
+## Other usefull functions for the Twitter data
+
+These functions below are used to obtain more data about the parks once the data is pulled from the Twitter API. This includes distance traveled and days since a visitor's last visit to the park.
+
+```{r}
+## This function will get the distances between the user specified home location, and the park that they visited
+## Inputs: A twitter data frame
+## Outputs: twitter data frame
+TwitterDistance <- function(data) {
+  data$DistanceDriven <- NA
+  data$Name2 <- gsub(pattern = replacePattern, replacement = "+", x = data$Name)
+  data$Location2 <- gsub(pattern = replacePattern, replacement = "+", x = data$location)
+  
+  for (i in 1:nrow(data)) {
+    if (nchar(data$Location2[i]) > 1) {
+      data$DistanceDriven[i] <- gmapsdistance(origin = data$Location2[i], destination = data$Name2[i], mode = "driving")$Distance / 1609
+    }
+  }
+  return(data)
+}
+
+## This function will compute the days since a visitor's last visit to a park
+## Inputs: twitter data frame
+## Outputs: twitter data frame
+TwitterComputeDaysSince <- function(data) {
+  data$Date <- paste(data$Day, data$Month, data$Year, sep = ".")
+
+  data <- data%>%arrange(Name, user_id, Year, Month, Day)
+
+  ##actually computing days since
+  data$DaysSince <- NA
+  for (i in 2:nrow(data)) {
+    if((data$user_id[i] == data$user_id[i-1]) & (data$Name[i] == data$Name[i-1])) {
+      data$DaysSince[i] <- difftime(strptime(data$Date[i], format = "%d.%m.%Y"),
+                                           strptime(data$Date[i-1], format = "%d.%m.%Y"), units = "days")
+    }
+  }
+  return(data)
+}
+```
+
+Combined Twitter/Flickr Functions
+===
+
+This is a combined Twitter/Flickr function that will compute the length of a visitors trip to a park, given they tweeted or posted a picture on Flickr on multiple days during their visit.
+
+```{r}
+## Computes the length of the trip for a visitor to a park
+## Inputs: a twitter or flickr data frame
+## Outputs: a twitter or flickr data frame
+ComputeLenghtTrip <- function(data) {
+  data$LengthTrip <- 0
+  data$LengthTrip[data$DistanceDriven > 50 & data$DaysSince < 10 & !is.na(data$DaysSince)] <- NA
+
+  for (i in 1:nrow(data)) {
+   if (is.na(data$LengthTrip[i])) {
+      next
+   } else if (!is.na(data$LengthTrip[i + 1])) {
+     data$LengthTrip[i] <- 1
+    } else {
+     j = i + 1
+     while(j < nrow(data) & is.na(data$LengthTrip[j + 1])) {
+       j = j +1
+      }
+      data$LengthTrip[i] <- sum(data$DaysSince[(i+1):j]) + 1
+    }
+  }
+  return(data)
+}
+```
+
+Pre-processing for sentiment analysis
+===
+
+## Setting up for sentiment analysis
+
+```
+twitterFULL <- rbind(allParkTweets,...)
+```
+
+Send `twitterFULL` to the sentiment analysis process
+
+Sentiment Analysis
+===
+
+-Can get from github:
+  -Profile name: *ChanaeO*
+  -File: *UWLREU2018/text.analysis.R*
+
+
+Post sentiment analysis processing
+===
+
+## Formatting and Running the Distance and days since functions
+
+This set up will reduce the Twitter data to one tweet per user per day. If a user tweeted more than one time at a park during the same day, their sentiments will be summed up to get an overall sentiment per day per user. This data is then merged with the rest of out twitter data.
+
+```{r}
+twitterFULL$Year <- substr(twitterFULL$created_at, 1, 4)
+twitterFULL$Month <- substr(twitterFULL$created_at, 6, 7)
+twitterFULL$Day <- substr(twitterFULL$created_at, 9, 10)
+
+twitterFULLUnique <- twitterFULL%>%group_by(Name, location, user_id, Year, Month, Day)%>%summarise(Count = n())
+twitterFULLUnique <- TwitterDistance(twitterFULLUnique)
+twitterFULLUnique <- TwitterComputeDaysSince(twitterFULLUnique)
+twitterFULLUnique <- ComputeLenghtTrip(twitterFULLUnique)
+twitterFULLUnique
+
+twitterFULLUnique%>%group_by(Name)%>%summarise(MeanDistance = mean(DistanceDriven, na.rm = T),
+                                                  MedianDistance = median(DistanceDriven, na.rm = T),
+                                                  MeanLengthTrip = mean(LengthTrip, na.rm = T),
+                                                  MedianLengthTrip = median(LengthTrip, na.rm = T))
+
+twitterSentiment <- twitterFULLUnique_sentiment_sen%>%group_by(element_id)%>%summarise(Sentiment = sum(sentiment))
+
+twitter <- cbind(twitterFULLUnique, twitterSentiment)
+```
+
+Creating Plots
+===
+
+For Figures 1,2,6:
+```
+stateParks <- rbind(PARKFlickMonth, for each park,...)
+```
+
+## Figure 1 - Wisconsin State Parks: Actual Visitors vs Flickr Visitors (January 2013- June 2018). 1:1 line shown in grey
+
+```{r}
+ggplot(data = stateParks, aes(x = log(Count + 1), y = log(Visitors))) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = F, col = "red", size = 2) +
+  theme_bw(base_size = 14) +
+  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), axis.text.x = element_text(size = rel(1.5)), axis.text.y = element_text(size = rel(1.5))) +
+  ylim(values = c(0,14)) +
+  geom_abline(intercept = 0, slope = 1, col = "lightgrey", size = 2) +
+  xlab("Log Number of Flickr Visitors per Month") +
+  ylab("Log Number of Actual Visitors per Month") +
+  ggtitle("Wisconsin State Parks: Actual Visitors vs Flickr Visitors")
+```
+
+## Figure 2 - Flickr visitors per month at 10 Wisconsin State Parks (January 2013 - June 2018)
+
+Need code on how I made parkFacts
+
+```{r}
+## Reading in the weather data and formating
+devilsWeather <- read.csv("devilsLakeWeather.csv", header = T)
+parksWeather <- read.csv("parksWeather.csv", header = T)
+parksWeather <- rbind(parksWeather, devilsWeather)
+parksWeather$ParkName <- ifelse(parksWeather$NAME == "ARGYLE, WI US", "Yellowstone Lake State Park, WI",
+                                ifelse(parksWeather$NAME == "DODGEVILLE, WI US", "Governer Dodge State Park, WI",
+                                       ifelse(parksWeather$NAME == "LAKE GENEVA 0.6 ENE, WI US", "Big Foot Beach State Park, WI",
+                                              ifelse(parksWeather$NAME == "NECEDAH 5 WNW, WI US", "Buckhorn State Park, WI",
+                                                     ifelse(parksWeather$NAME == "PATTISON STATE PARK, WI US", "Pattison State Park, WI",
+                                                            ifelse(parksWeather$NAME == "STOUGHTON, WI US", "Lake Kegonsa State Park, WI",
+                                                                   ifelse(parksWeather$NAME == "STURGEON BAY EXPERIMENTAL FARM, WI US", "Penninsula State Park, WI",
+                                                                          ifelse(parksWeather$NAME == "TREMPEALEAU 1.8 NW, WI US", "Perrot State Park, WI",
+                                                                                 ifelse(parksWeather$NAME == "WISCONSIN DELLS, WI US", "Mirror Lake State Park, WI", "Devil's Lake, WI")))))))))
+
+## Megre the weather and visitor counts together
+parksFacts <- stateParks%>%left_join(parksWeather, by = c("Name" = "ParkName", "Date" = "DATE"))
+parksFacts
+parksFacts%>%filter(Name == "Devil's Lake, WI")
+
+##plot
+ggplot(data = parksFacts, aes(x = Date)) +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), axis.text.x = element_text(size = rel(1.5)), axis.text.y = element_text(size = rel(2)), strip.text = element_text(size = rel(1.5))) +
+  facet_wrap(~Name, nrow = 2) +
+  geom_line(aes(y = Count, group = Group), col = "black", size = 2) +
+  scale_x_discrete(labels = c(rep(c("Jan", "", "", "", "", "", "", "", "", "", "", ""), 5), "Jan", "", "", "", "", "")) +
+  xlab("Month") +
+  ylab("Number of Flickr Visitors") +
+  ggtitle("Number of Flickr Visitors per Month")
+```
+
+## Figure 3 - Map of the 10 Wisconsin State Parks with median distance traveled and percent of unique visitors
+
+```{r}
+## stateFiltered computed using the FlickrComputeDaysSince and FlickrDistance function on all of the Flickr data for every park
+
+## Computing length of visit
+stateFiltered$LengthTrip <- 0
+stateFiltered$LengthTrip[stateFiltered$DistanceDriven > 50 & stateFiltered$DaysSince < 7 & !is.na(stateFiltered$DaysSince)] <- NA
+
+for (i in 1:nrow(stateFiltered)) {
+  if (is.na(stateFiltered$LengthTrip[i])) {
+    next
+  } else if (!is.na(stateFiltered$LengthTrip[i + 1])) {
+    stateFiltered$LengthTrip[i] <- 1
+  } else {
+    j = i + 1
+    while(j < nrow(stateFiltered) & is.na(stateFiltered$LengthTrip[j + 1])) {
+      j = j +1
+    }
+    stateFiltered$LengthTrip[i] <- sum(stateFiltered$DaysSince[(i+1):j]) + 1
+  }
+}
+
+## Getting average stats for each state park
+filteredSummary <- stateFiltered%>%filter(!is.na(LengthTrip))%>%group_by(Name)%>%summarise(MeanDistance = mean(DistanceDriven, na.rm = T),
+                                                                                           MedianDistance = median(DistanceDriven, na.rm = T),
+                                                                                           MeanLengthTrip = mean(LengthTrip, na.rm = T),
+                                                                                           MedianLengthTrip = median(LengthTrip, na.rm = T),
+                                                                                           NumberOfVisits = n(),
+                                                                                           NumberUniqueVisitors = n_distinct(owner))
+
+## Reading in Latitudes and Longitudes
+latLong <- read.csv("parks.csv", header = T)
+latLong <- latLong%>%left_join(filteredSummary, by = c("Park" = "Name"))
+
+## Google Map view of wisconsin
+wisconsin <- get_map(location = "Wisconsin", zoom = 6)
+
+##Mapping the state parks with there size according to the median distance traveled by Flickr users to the park
+ggmap(wisconsin) +
+  geom_point(data = latLong, aes(x = Long, y = Lat, size = MedianDistance, fill = (NumberUniqueVisitors / NumberOfVisits)), col = "black", shape = 21) +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), legend.title = element_text(size = rel(2)), legend.text = element_text(size = rel(1))) +
+  scale_size_continuous(range = c(3, 12), name = "Median Distance (miles)") +
+  scale_fill_gradient(name = "Percent of Unique Visitors", low = "cyan", high = "darkblue") +
+  xlim(limits = c(-93, -86)) +
+  ylim(limits = c(42, 47)) +
+  xlab("Longitude") +
+  ylab("Latitude") +
+  ggtitle("State Parks in Wisconsin")
+```
+
+## Figure 4 - Sentiment vs Distance Driven to Wisconsin State Parks (red line is neutral).
+
+```{r}
+ggplot(twitter, aes(x = DistanceDriven, y = Sentiment)) +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3))) +
+  geom_point(size = 5) +
+  geom_hline(yintercept = 0, col = "red", lty = 2, size = 2) +
+  ylab(expression("Negative " %<-% " Sentiment " %->% " Positive")) +
+  xlab("Distance Driven (miles)") +
+  ggtitle("Sentiment vs Distance Driven to Wisconsin State Parks")
+```
+
+## Figure 5 - Devil’s Lake Sentiment Per Week
+
+Can do this with any of the parks as well
+
+```{r}
+devilsTwitter <- twitter %>%
+                  filter(Name == "Devil's Lake, WI") %>%
+                  mutate(Week = as.factor(floor_date(created_at, unit = "1 week")))
+devilsTwitter$SentimentName <- ifelse(devilsTwitter$Sentiment > 0, "Positive",
+                                      ifelse(devilsTwitter$Sentiment < 0, "Negative", "Neutral"))
+devilsTwitterSimple <- devilsTwitter %>%
+                  count(Week, SentimentName) %>%
+                  rename(NumberTweets = n) %>%
+                  mutate(TotalTweets = c(2,17,17,17,8,8,8,13,13,13,24,24,24,2,2), Percent = NumberTweets / TotalTweets)
+                  
+ggplot(data = devilsTwitterSimple, aes(x = Week, y = Percent, group = SentimentName, col = SentimentName)) +
+  geom_point(size = 5, shape = 15)
+
+##reformat to long version
+devilsTwitterLong <- melt(devilsTwitterSimple) %>% filter(variable == "Percent")
+
+devilsTwitterLong <- rbind(devilsTwitterLong, data.frame(Week = c("2018-07-01", "2018-07-01"), SentimentName = c("Negative", "Neutral"), variable = rep("Percent", 2), value = rep(0, 2)))
+
+devilsTwitterLong$SentimentName <- as.factor(devilsTwitterLong$SentimentName)
+devilsTwitterLong$SentimentName <- ordered(devilsTwitterLong$SentimentName, levels = c("Positive", "Neutral", "Negative"))
+
+
+##plot
+ggplot(data = devilsTwitterLong%>%filter(!(Week == "2018-07-01") & !(Week == "2018-08-05")), aes(x = Week, y = value, fill = SentimentName)) +
+  geom_bar(stat = "identity", position = "dodge", col = "black") +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), legend.key.size = unit(1.5, "cm"), legend.title = element_text(size = rel(2)), legend.text = element_text(size = rel(2)), axis.text.x = element_text(size = rel(2)), axis.text.y = element_text(size = rel(2))) +
+  scale_fill_manual(values = c("blue3", "darkgrey", "red"), name = "Sentiment") +
+  xlab("Week") +
+  ylab("Percent of Tweets") +
+  ggtitle("Devil's Lake Visitors' Sentiment")
+```
+
+## Figure 6 - Devil’s Lake Visitor Count and Temperature
+
+Can do the same for the other parks as well.
+
+```{r}
+devilsMelt <- melt(parksFacts%>%filter(Name == "Devil's Lake, WI", Date < "2016-07")%>%select(Date, Count, DX70, DX90))
+
+## plot
+ggplot(data = devilsMelt, aes(x = Date, y = value, group = variable, col = variable)) +
+  geom_line(size = 2) +
+  theme_bw() +
+  theme(axis.title.x = element_text(size = rel(2)), axis.title.y = element_text(size = rel(2)), plot.title = element_text(size = rel(3)), axis.text.x = element_text(size = rel(2)), legend.text = element_text(size = rel(2)), axis.text.y = element_text(size = rel(2))) +
+  scale_x_discrete(labels = c(rep(c("Jan", "", "", "", "", "", "Jul", "", "", "", "", ""), 5), "Jan", "", "", "", "", "")) +
+  scale_color_manual(values = c("black", "red", "orange"), name = "", labels = c("Flickr Visitor Count", expression("Days Above 70" ~degree~ "F"), expression("Days Above 90" ~degree~ "F"))) +
+  xlab("Month") +
+  ylab("Count") +
+  ggtitle("Devil's Lake Visitor Count and Temperature")
+```
+
